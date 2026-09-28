@@ -110,7 +110,7 @@ export default function MapView() {
                   {currentProducts.map((p) => (
                     <li key={p.id}>
                       <Link to={`/tienda/producto/${p.id}`} className="flex items-center gap-3 rounded-xl border border-black/5 p-2.5 transition-colors hover:border-brand-300 hover:bg-brand-50/50">
-                        <ProductThumb emoji={p.emoji} image={p.image} size="xs" />
+                        <ProductThumb emoji={p.emoji} image={p.image} photo={p.photo} alt={p.name} size="xs" />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-[13px] font-semibold text-ink">{p.name}</p>
                           <p className="text-[11.5px] text-ink-soft">

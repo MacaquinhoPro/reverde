@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { ArrowDownRight, ArrowUpRight } from 'lucide-react';
 import { cx, initials } from '../../lib/format';
 import { RISK_META } from '../../lib/ai';
@@ -225,20 +225,29 @@ export function ScoreRing({
   );
 }
 
-/** Ficha visual del producto: gradiente de categoría + emoji. Sin dependencias externas. */
+/**
+ * Ficha visual del producto: foto real sobre el gradiente de su categoría.
+ * Las fotos viven en /public/img/productos, así que la demo sigue funcionando
+ * sin internet; si una foto falta o falla, se ve el gradiente con el emoji.
+ */
 export function ProductThumb({
   emoji,
   image,
+  photo,
+  alt,
   size = 'md',
   className,
   children,
 }: {
   emoji: string;
   image: string;
+  photo?: string;
+  alt?: string;
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
   className?: string;
   children?: ReactNode;
 }) {
+  const [failed, setFailed] = useState(false);
   const sizes = {
     xs: 'h-9 w-9 text-lg rounded-[10px]',
     sm: 'h-12 w-12 text-2xl rounded-xl',
@@ -256,7 +265,18 @@ export function ProductThumb({
         className,
       )}
     >
-      <span className="drop-shadow-sm">{emoji}</span>
+      {photo && !failed ? (
+        <img
+          src={photo}
+          alt={alt ?? ''}
+          loading="lazy"
+          decoding="async"
+          onError={() => setFailed(true)}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <span className="drop-shadow-sm">{emoji}</span>
+      )}
       {children}
     </div>
   );

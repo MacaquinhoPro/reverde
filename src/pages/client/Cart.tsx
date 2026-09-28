@@ -63,7 +63,7 @@ export default function Cart() {
               <Card key={product.id} className="p-3.5">
                 <div className="flex gap-3.5">
                   <Link to={`/tienda/producto/${product.id}`}>
-                    <ProductThumb emoji={product.emoji} image={product.image} size="md" />
+                    <ProductThumb emoji={product.emoji} image={product.image} photo={product.photo} alt={product.name} size="md" />
                   </Link>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">

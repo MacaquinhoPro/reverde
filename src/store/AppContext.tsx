@@ -20,13 +20,12 @@ import type {
   Toast,
   User,
 } from '../types';
-import { buildSeedProducts } from '../data/products';
-import { buildSeedPromoOutcomes, buildSeedSales } from '../data/history';
 import { DEMO_PASSWORD, findUserByEmail } from '../data/users';
 import { CATALOG } from '../data/catalog';
 import { computeRisk, finalPrice } from '../lib/ai';
-import { addDays, orderCode, uid } from '../lib/format';
-import { load, resetAll, save } from '../lib/storage';
+import { addDays, orderCode, qtyLabel, uid } from '../lib/format';
+import { resetAll, save } from '../lib/storage';
+import { buildSeed, loadDemoState, stampFresh } from '../lib/demoState';
 
 interface AppState {
   user: User | null;
@@ -70,32 +69,19 @@ interface AppApi extends AppState {
 
 const AppContext = createContext<AppApi | null>(null);
 
-function seedState(): Omit<AppState, 'toasts'> {
-  return {
-    user: null,
-    products: buildSeedProducts(),
-    sales: buildSeedSales(),
-    orders: [],
-    promoOutcomes: buildSeedPromoOutcomes(),
-    cart: [],
-    dismissed: {},
-    appliedRecs: [],
-  };
-}
-
 export function AppProvider({ children }: { children: ReactNode }) {
-  const seed = useMemo(seedState, []);
+  // Una sola lectura del almacenamiento: resiembra si cambiaron las semillas y
+  // reancla las fechas simuladas si pasaron días desde la última visita.
+  const initial = useMemo(() => loadDemoState(), []);
 
-  const [user, setUser] = useState<User | null>(() => load('user', seed.user));
-  const [products, setProducts] = useState<Product[]>(() => load('products', seed.products));
-  const [sales, setSales] = useState<Sale[]>(() => load('sales', seed.sales));
-  const [orders, setOrders] = useState<Order[]>(() => load('orders', seed.orders));
-  const [promoOutcomes, setPromoOutcomes] = useState<PromoOutcome[]>(() =>
-    load('promoOutcomes', seed.promoOutcomes),
-  );
-  const [cart, setCart] = useState<CartLine[]>(() => load('cart', seed.cart));
-  const [dismissed, setDismissed] = useState<Record<string, string>>(() => load('dismissed', {}));
-  const [appliedRecs, setAppliedRecs] = useState<string[]>(() => load('appliedRecs', []));
+  const [user, setUser] = useState<User | null>(initial.user);
+  const [products, setProducts] = useState<Product[]>(initial.products);
+  const [sales, setSales] = useState<Sale[]>(initial.sales);
+  const [orders, setOrders] = useState<Order[]>(initial.orders);
+  const [promoOutcomes, setPromoOutcomes] = useState<PromoOutcome[]>(initial.promoOutcomes);
+  const [cart, setCart] = useState<CartLine[]>(initial.cart);
+  const [dismissed, setDismissed] = useState<Record<string, string>>(initial.dismissed);
+  const [appliedRecs, setAppliedRecs] = useState<string[]>(initial.appliedRecs);
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   // El checkout puede ejecutarse después de un login inmediato (invitado que
@@ -152,7 +138,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const resetDemo = useCallback(() => {
     resetAll();
-    const fresh = seedState();
+    stampFresh();
+    const fresh = buildSeed();
     userRef.current = null;
     setUser(null);
     setProducts(fresh.products);
@@ -225,10 +212,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
           const box: Omit<Product, 'id'> = {
             ...product,
             name: `Caja de rescate · ${product.name}`,
-            description: `Caja sorpresa con ${boxQty * 3} ${product.unit}s de ${product.name.toLowerCase()} en excelente estado, rescatados antes de su vencimiento.`,
+            description: `Caja sorpresa con ${qtyLabel(boxQty * 3, product.unit)} de ${product.name.toLowerCase()} en excelente estado, rescatados antes de su vencimiento.`,
             category: 'Cajas de rescate',
             emoji: '🧺',
             image: CATALOG.cajaFrutas.image,
+            photo: product.photo ?? CATALOG.cajaFrutas.photo,
             quantity: boxQty,
             unit: 'caja',
             weightPerUnitKg: product.weightPerUnitKg * 3,
@@ -253,6 +241,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             productId: product.id,
             productName: product.name,
             emoji: product.emoji,
+            photo: product.photo,
             customer: 'Banco de Alimentos',
             establishmentId: product.establishmentId,
             qty: product.quantity,
@@ -326,6 +315,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         name: product.name,
         emoji: product.emoji,
         image: product.image,
+        photo: product.photo,
         qty: line.qty,
         unitOriginalPrice: product.originalPrice,
         unitPrice: finalPrice(product),
@@ -361,6 +351,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         productId: product.id,
         productName: product.name,
         emoji: product.emoji,
+        photo: product.photo,
         customer: activeUser.name,
         establishmentId: product.establishmentId,
         qty: line.qty,

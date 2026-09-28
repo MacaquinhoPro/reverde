@@ -110,7 +110,8 @@ src/
 │   ├── ai.ts                 Risk Score, recomendaciones, explicabilidad, aprendizaje
 │   ├── metrics.ts            KPIs de impacto, series semanales, comparativas mes a mes
 │   ├── format.ts             COP, fechas, utilidades
-│   └── storage.ts            Persistencia en localStorage
+│   ├── storage.ts            Persistencia en localStorage
+│   └── demoState.ts          Resiembra por versión y reanclaje de fechas simuladas
 ├── store/AppContext.tsx      Estado global: sesión, inventario, carrito, pedidos, ventas, toasts
 ├── hooks/                    useEstablishmentData · useMarketplace
 ├── components/
@@ -172,6 +173,56 @@ Todas las acciones producen cambios visibles y persistentes en `localStorage`:
 crear producto → aparece en inventario · aplicar descuento → cambia el precio · publicar → aparece en el
 marketplace · comprar → baja el stock, registra la venta, alimenta el aprendizaje y actualiza las métricas de
 impacto del establecimiento y del panel global.
+
+### La demo no se vuelve obsoleta
+
+Las semillas usan fechas relativas ("vence en 2 días"), pero al guardarse en el navegador quedarían
+congeladas: al día siguiente medio inventario aparecería vencido y las gráficas de 60 días se correrían.
+`src/lib/demoState.ts` lo evita con dos mecanismos que corren al abrir la app:
+
+| | Qué hace | Cuándo |
+|---|---|---|
+| **Anclaje temporal** | Desplaza las fechas de los datos **simulados** los días transcurridos desde la última visita. Lo que creó la persona usuaria (sus productos, sus compras) conserva su fecha real. | Al cambiar el día |
+| **Versión de semilla** | Vuelve a sembrar la demo conservando la sesión iniciada. | Al cambiar `SEED_VERSION` |
+
+> **Al editar `data/catalog.ts`, `data/products.ts` o `data/history.ts`, sube `SEED_VERSION` en
+> `src/lib/demoState.ts`.** Si no, quienes ya abrieron la app seguirán viendo los datos viejos hasta
+> entrar a *Perfil → Reiniciar datos de la demo*.
+
+---
+
+## Fotos de los productos
+
+Las 18 fotos viven en `public/img/productos/` (≈ 840 KB en total), así que **la demo sigue funcionando sin
+internet**. `ProductThumb` las muestra sobre el gradiente de su categoría y, si alguna faltara, cae
+automáticamente al gradiente con el emoji.
+
+Todas son de [StockSnap.io](https://stocksnap.io) con licencia **CC0** (dominio público, sin atribución
+obligatoria). Se citan por transparencia académica:
+
+| Archivo | Foto | Fuente |
+|---|---|---|
+| `aguacate.jpg` | Avocado Fruit | [avocado-fruit-GM3FAABVJ8](https://stocksnap.io/photo/avocado-fruit-GM3FAABVJ8) |
+| `banano.jpg` | Bananas Fruits | [bananas-fruits-D0C5D92CD9](https://stocksnap.io/photo/bananas-fruits-D0C5D92CD9) |
+| `bowl.jpg` | Marble Wood | [marble-wood-2033C482D4](https://stocksnap.io/photo/marble-wood-2033C482D4) |
+| `cajaFrutas.jpg` | Basket Fruits | [basket-fruits-RZT4RP811T](https://stocksnap.io/photo/basket-fruits-RZT4RP811T) |
+| `cajaPan.jpg` | Bread Bakery | [bread-bakery-EA1243E167](https://stocksnap.io/photo/bread-bakery-EA1243E167) |
+| `croissant.jpg` | Croissant Pastry | [croissant-pastry-3020ACDE09](https://stocksnap.io/photo/croissant-pastry-3020ACDE09) |
+| `ensalada.jpg` | Salad Lettuce | [salad-lettuce-Z0133GNPXT](https://stocksnap.io/photo/salad-lettuce-Z0133GNPXT) |
+| `fresas.jpg` | Red Strawberries | [red-strawberries-NAJN9P6LHG](https://stocksnap.io/photo/red-strawberries-NAJN9P6LHG) |
+| `jugo.jpg` | Apple Orange | [apple-orange-UR1JSQIAUN](https://stocksnap.io/photo/apple-orange-UR1JSQIAUN) |
+| `leche.jpg` | Glass Milk | [glass-milk-P2QSUXKCN5](https://stocksnap.io/photo/glass-milk-P2QSUXKCN5) |
+| `lechuga.jpg` | Green Lettuce | [green-lettuce-WLZ7N1WO0I](https://stocksnap.io/photo/green-lettuce-WLZ7N1WO0I) |
+| `pan.jpg` | Homemade Bread | [homemade-bread-WELQ7DLMJQ](https://stocksnap.io/photo/homemade-bread-WELQ7DLMJQ) |
+| `pollo.jpg` | Grilled Chicken | [grilled-chicken-ZKP84YCBWQ](https://stocksnap.io/photo/grilled-chicken-ZKP84YCBWQ) |
+| `queso.jpg` | Cheese Food | [cheese-food-ABFRSZL8XB](https://stocksnap.io/photo/cheese-food-ABFRSZL8XB) |
+| `sandwich.jpg` | Food Sandwich | [food-sandwich-K5T076FWTJ](https://stocksnap.io/photo/food-sandwich-K5T076FWTJ) |
+| `tomate.jpg` | Red Tomatoes | [red-tomatoes-GB9LU1L8RG](https://stocksnap.io/photo/red-tomatoes-GB9LU1L8RG) |
+| `yogur.jpg` | Granola Yogurt | [granola-yogurt-QL0I5DPNGX](https://stocksnap.io/photo/granola-yogurt-QL0I5DPNGX) |
+| `yogurGriego.jpg` | Breakfast Chiaseeds | [breakfast-chiaseeds-6808JBMVZX](https://stocksnap.io/photo/breakfast-chiaseeds-6808JBMVZX) |
+
+Para reemplazar una foto basta con dejar otro `.jpg` con el mismo nombre (recorte 4:3, 720 × 540) y subir
+`SEED_VERSION`.
 
 ---
 

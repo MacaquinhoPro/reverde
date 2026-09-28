@@ -22,6 +22,8 @@ export function ProductCard({ product, compact }: { product: Product; compact?: 
           <ProductThumb
             emoji={product.emoji}
             image={product.image}
+            photo={product.photo}
+            alt={product.name}
             size="full"
             className={cx('rounded-none', compact ? 'h-28 text-5xl' : 'h-36 text-6xl sm:h-40')}
           />

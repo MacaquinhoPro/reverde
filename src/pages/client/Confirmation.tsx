@@ -94,7 +94,7 @@ export default function Confirmation() {
             <ul className="space-y-2.5">
               {order.items.map((i) => (
                 <li key={i.productId} className="flex items-center gap-3">
-                  <ProductThumb emoji={i.emoji} image={i.image} size="xs" />
+                  <ProductThumb emoji={i.emoji} image={i.image} photo={i.photo} alt={i.name} size="xs" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[13.5px] font-semibold text-ink">{i.name}</p>
                     <p className="text-[11.5px] text-ink-soft">{i.qty} × {cop(i.unitPrice)}</p>

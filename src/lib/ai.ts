@@ -16,7 +16,7 @@ import type {
   RiskFactor,
   RiskLevel,
 } from '../types';
-import { daysUntil } from './format';
+import { daysUntil, qtyLabel } from './format';
 
 /** Sensibilidad de cada categoría: cuánto pesa el vencimiento cercano. */
 const CATEGORY_PERISHABILITY: Record<Category, number> = {
@@ -77,7 +77,7 @@ export function computeRisk(p: Product): ComputedRisk {
   const stockRisk = clamp((ratio - 0.55) * 22, 0, 30);
   factors.push({
     label: 'Stock frente al tiempo restante',
-    detail: `Quedan ${p.quantity} ${p.unit}${p.quantity === 1 ? '' : 's'} y se venden ~${p.dailySales.toFixed(1)} por día: se necesitan ${coverageDays.toFixed(
+    detail: `Quedan ${qtyLabel(p.quantity, p.unit)} y se venden ~${p.dailySales.toFixed(1)} por día: se necesitan ${coverageDays.toFixed(
       1,
     )} días para agotarlo${daysLeft > 0 ? ` y solo hay ${daysLeft}.` : '.'}`,
     weight: Math.round(stockRisk),
@@ -238,21 +238,21 @@ export function buildRecommendation(
 
 /** Texto de alerta resumido, listo para la bandeja de alertas. */
 export function buildAlertCopy(p: Product, risk: ComputedRisk, rec: Recommendation) {
-  const qtyLabel = `${p.quantity} ${p.unit}${p.quantity === 1 ? '' : 's'} de ${p.name.toLowerCase()}`;
+  const qtyText = `${qtyLabel(p.quantity, p.unit)} de ${p.name.toLowerCase()}`;
   if (risk.level === 'alto') {
     return {
-      title: `${qtyLabel} ${risk.daysLeft <= 0 ? 'vencieron' : risk.daysLeft === 1 ? 'vencen mañana' : `vencen en ${risk.daysLeft} días`}`,
+      title: `${qtyText} ${risk.daysLeft <= 0 ? 'vencieron' : risk.daysLeft === 1 ? 'vencen mañana' : `vencen en ${risk.daysLeft} días`}`,
       body: `Probabilidad estimada de desperdicio: ${risk.wasteProbability} %. Recomendación: aplicar descuento del ${rec.suggestedDiscount} % y publicar en Reverde.`,
     };
   }
   if (risk.level === 'medio') {
     return {
-      title: `${qtyLabel} presentan baja rotación`,
+      title: `${qtyText} presentan baja rotación`,
       body: `Vence en ${risk.daysLeft} días y se necesitan ${risk.coverageDays.toFixed(0)} días para agotarlo. Recomendamos crear un combo o aplicar ${rec.suggestedDiscount} % de descuento.`,
     };
   }
   return {
-    title: `${qtyLabel} bajo control`,
+    title: `${qtyText} bajo control`,
     body: `El ritmo de ventas alcanza a cubrir el inventario antes del vencimiento.`,
   };
 }

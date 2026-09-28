@@ -18,7 +18,7 @@ import { useEstablishmentData } from '../../hooks/useEstablishmentData';
 import { useApp } from '../../store/AppContext';
 import { CATEGORIES } from '../../data/catalog';
 import { finalPrice } from '../../lib/ai';
-import { cop, cx, expiryLabel, formatDateShort } from '../../lib/format';
+import { cop, cx, expiryLabel, formatDateShort, qtyLabel, unitLabel } from '../../lib/format';
 import { Card, EmptyState, ProductThumb, SectionTitle } from '../../components/ui/Primitives';
 import { Button, IconButton } from '../../components/ui/Button';
 import { Badge, RiskBadge } from '../../components/ui/Badge';
@@ -240,7 +240,7 @@ export default function Inventory() {
                   <tr key={product.id} className="group transition-colors hover:bg-brand-50/40">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <ProductThumb emoji={product.emoji} image={product.image} size="xs" />
+                        <ProductThumb emoji={product.emoji} image={product.image} photo={product.photo} alt={product.name} size="xs" />
                         <div className="min-w-0">
                           <p className="truncate text-[13.5px] font-semibold text-ink">{product.name}</p>
                           <p className="truncate text-[11.5px] text-ink-faint">{product.category}</p>
@@ -248,7 +248,7 @@ export default function Inventory() {
                       </div>
                     </td>
                     <td className="px-3 py-3 text-[13px] text-ink">
-                      {product.quantity} <span className="text-ink-faint">{product.unit}s</span>
+                      {product.quantity} <span className="text-ink-faint">{unitLabel(product.unit, product.quantity)}</span>
                     </td>
                     <td className="px-3 py-3 text-[12.5px] text-ink-soft">{formatDateShort(product.entryDate)}</td>
                     <td className="px-3 py-3">
@@ -310,14 +310,14 @@ export default function Inventory() {
             {rows.map(({ product, risk: r }) => (
               <Card key={product.id} className="p-3.5">
                 <div className="flex gap-3">
-                  <ProductThumb emoji={product.emoji} image={product.image} size="sm" />
+                  <ProductThumb emoji={product.emoji} image={product.image} photo={product.photo} alt={product.name} size="sm" />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
                       <p className="truncate text-[14px] font-bold text-ink">{product.name}</p>
                       <RiskBadge level={r.level} score={r.score} size="sm" showScore={false} />
                     </div>
                     <p className="mt-0.5 text-[12px] text-ink-soft">
-                      {product.quantity} {product.unit}s · {expiryLabel(product.expiryDate)}
+                      {qtyLabel(product.quantity, product.unit)} · {expiryLabel(product.expiryDate)}
                     </p>
                     <div className="mt-1.5 flex items-center gap-2">
                       <span className="text-[14px] font-extrabold text-brand-700">{cop(finalPrice(product))}</span>

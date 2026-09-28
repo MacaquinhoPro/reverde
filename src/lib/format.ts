@@ -85,3 +85,23 @@ export const orderCode = (): string =>
 
 export const initials = (name: string): string =>
   name.split(' ').filter(Boolean).slice(0, 2).map((n) => n[0]).join('').toUpperCase();
+
+/**
+ * Pluraliza la unidad de un producto en español: "11 unidades", "1 bandeja",
+ * "3 kg". Sin esto el `${unit}s` literal producía "unidads" y "cajas" mal
+ * formados en alertas, inventario y marketplace.
+ */
+const UNIT_PLURAL: Record<string, string> = {
+  unidad: 'unidades',
+  kg: 'kg',
+  g: 'g',
+  litro: 'litros',
+  bandeja: 'bandejas',
+  caja: 'cajas',
+};
+
+export const unitLabel = (unit: string, qty = 2): string =>
+  qty === 1 ? unit : (UNIT_PLURAL[unit] ?? `${unit}s`);
+
+/** "11 unidades" · "1 caja" */
+export const qtyLabel = (qty: number, unit: string): string => `${qty} ${unitLabel(unit, qty)}`;

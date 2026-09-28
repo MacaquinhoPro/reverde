@@ -50,6 +50,7 @@ export function buildSeedSales(): Sale[] {
           productId: `p-${est.id}-${key}-h`,
           productName: c.name,
           emoji: c.emoji,
+          photo: c.photo,
           customer: CUSTOMERS[(Math.floor(rnd() * CUSTOMERS.length) + ei) % CUSTOMERS.length],
           establishmentId: est.id,
           qty,
@@ -59,6 +60,7 @@ export function buildSeedSales(): Sale[] {
           recovered: soldPrice * qty,
           wasteAvoidedKg: +(c.weightPerUnitKg * qty).toFixed(2),
           channel: rnd() > 0.22 ? 'marketplace' : 'tienda',
+          seed: true,
         });
       }
     });
@@ -93,5 +95,5 @@ export function buildSeedPromoOutcomes(): PromoOutcome[] {
     { category: 'Bebidas', discountPercent: 20, sellThrough: 72, daysToSell: 2, establishmentId: 'sup-1' },
     { category: 'Bebidas', discountPercent: 35, sellThrough: 85, daysToSell: 1, establishmentId: 'res-2' },
   ];
-  return base.map((b) => ({ ...b, id: uid('po'), date: addDays(-Math.floor(5 + rnd() * 50)) }));
+  return base.map((b) => ({ ...b, id: uid('po'), date: addDays(-Math.floor(5 + rnd() * 50)), seed: true }));
 }

@@ -5,7 +5,7 @@ import { useApp } from '../../store/AppContext';
 import { ESTABLISHMENTS, byEstablishment } from '../../data/establishments';
 import { CATEGORIES } from '../../data/catalog';
 import { computeRisk, finalPrice } from '../../lib/ai';
-import { cop, expiryLabel, kg } from '../../lib/format';
+import { cop, expiryLabel, kg, qtyLabel, unitLabel } from '../../lib/format';
 import { Card, EmptyState, KpiCard, ProductThumb, SectionTitle } from '../../components/ui/Primitives';
 import { Badge, RiskBadge } from '../../components/ui/Badge';
 import { SearchInput, Select } from '../../components/ui/Field';
@@ -86,7 +86,7 @@ export default function Publications() {
                   <tr key={product.id} className="transition-colors hover:bg-brand-50/40">
                     <td className="px-4 py-3">
                       <Link to={`/tienda/producto/${product.id}`} className="flex items-center gap-3">
-                        <ProductThumb emoji={product.emoji} image={product.image} size="xs" />
+                        <ProductThumb emoji={product.emoji} image={product.image} photo={product.photo} alt={product.name} size="xs" />
                         <span className="min-w-0">
                           <span className="block truncate text-[13.5px] font-semibold text-ink hover:text-brand-700">{product.name}</span>
                           <span className="block truncate text-[11.5px] text-ink-faint">{product.category}</span>
@@ -95,7 +95,7 @@ export default function Publications() {
                     </td>
                     <td className="px-3 py-3 text-[12.5px] text-ink-soft">{byEstablishment(product.establishmentId)?.name}</td>
                     <td className="px-3 py-3 text-[13px] text-ink">
-                      {product.quantity} <span className="text-ink-faint">{product.unit}s</span>
+                      {product.quantity} <span className="text-ink-faint">{unitLabel(product.unit, product.quantity)}</span>
                     </td>
                     <td className="px-3 py-3 text-[12.5px] text-ink-soft">{expiryLabel(product.expiryDate)}</td>
                     <td className="px-3 py-3 text-[13px] font-bold text-brand-700">{cop(finalPrice(product))}</td>
@@ -111,12 +111,12 @@ export default function Publications() {
             {rows.map(({ product, risk }) => (
               <Card key={product.id} className="p-3.5">
                 <div className="flex gap-3">
-                  <ProductThumb emoji={product.emoji} image={product.image} size="sm" />
+                  <ProductThumb emoji={product.emoji} image={product.image} photo={product.photo} alt={product.name} size="sm" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[14px] font-bold text-ink">{product.name}</p>
                     <p className="truncate text-[12px] text-ink-soft">{byEstablishment(product.establishmentId)?.name}</p>
                     <p className="mt-1 text-[12px] text-ink-faint">
-                      {product.quantity} {product.unit}s · {kg(product.weightPerUnitKg * product.quantity)}
+                      {qtyLabel(product.quantity, product.unit)} · {kg(product.weightPerUnitKg * product.quantity)}
                     </p>
                     <div className="mt-2 flex items-center gap-2">
                       <span className="text-[14px] font-extrabold text-brand-700">{cop(finalPrice(product))}</span>

@@ -4,7 +4,7 @@ import { useApp } from '../../store/AppContext';
 import { byEstablishment, ESTABLISHMENTS } from '../../data/establishments';
 import { aggregate, inventoryStats, salesInLastDays, weeklySeries } from '../../lib/metrics';
 import { computeRisk, finalPrice } from '../../lib/ai';
-import { cop, expiryLabel, formatDate, kg } from '../../lib/format';
+import { cop, expiryLabel, formatDate, kg, qtyLabel } from '../../lib/format';
 import { Card, EmptyState, KpiCard, ProductThumb, SectionTitle } from '../../components/ui/Primitives';
 import { Button } from '../../components/ui/Button';
 import { Badge, RiskBadge } from '../../components/ui/Badge';
@@ -117,13 +117,13 @@ export default function EstablishmentDetail() {
               const r = computeRisk(p);
               return (
                 <li key={p.id} className="flex items-center gap-3 rounded-xl border border-black/5 p-3">
-                  <ProductThumb emoji={p.emoji} image={p.image} size="sm" />
+                  <ProductThumb emoji={p.emoji} image={p.image} photo={p.photo} alt={p.name} size="sm" />
                   <div className="min-w-0 flex-1">
                     <Link to={`/tienda/producto/${p.id}`} className="truncate text-[13.5px] font-bold text-ink hover:text-brand-700">
                       {p.name}
                     </Link>
                     <p className="truncate text-[12px] text-ink-soft">
-                      {p.quantity} {p.unit}s · {expiryLabel(p.expiryDate)} · −{p.discountPercent} %
+                      {qtyLabel(p.quantity, p.unit)} · {expiryLabel(p.expiryDate)} · −{p.discountPercent} %
                     </p>
                   </div>
                   <span className="shrink-0 text-[13.5px] font-extrabold text-brand-700">{cop(finalPrice(p))}</span>

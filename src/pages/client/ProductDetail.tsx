@@ -69,7 +69,7 @@ export default function ProductDetail() {
       <div className="grid gap-6 lg:grid-cols-[1.05fr_1fr]">
         {/* Galería */}
         <div className="space-y-3">
-          <ProductThumb emoji={product.emoji} image={product.image} size="full" className="h-64 rounded-2xl text-8xl sm:h-80">
+          <ProductThumb emoji={product.emoji} image={product.image} photo={product.photo} alt={product.name} size="full" className="h-64 rounded-2xl text-8xl sm:h-80">
             <span className="absolute left-4 top-4 flex flex-col gap-2">
               <DiscountTag percent={product.discountPercent} />
               {product.isRescueBox && (
@@ -83,11 +83,20 @@ export default function ProductDetail() {
             </span>
           </ProductThumb>
 
+          {/* Tira de miniaturas: la foto real primero, luego los distintivos. */}
           <div className="grid grid-cols-4 gap-2">
-            {[product.emoji, '📦', '🏷️', '🌿'].map((e, i) => (
+            <ProductThumb
+              emoji={product.emoji}
+              image={product.image}
+              photo={product.photo}
+              alt={product.name}
+              size="full"
+              className="h-16 rounded-xl text-2xl ring-2 ring-brand-500"
+            />
+            {['📦', '🏷️', '🌿'].map((e) => (
               <div
-                key={i}
-                className={`flex h-16 items-center justify-center rounded-xl bg-gradient-to-br text-2xl ${product.image} ${i === 0 ? 'ring-2 ring-brand-500' : 'opacity-70'}`}
+                key={e}
+                className={`flex h-16 items-center justify-center rounded-xl bg-gradient-to-br text-2xl opacity-70 ${product.image}`}
               >
                 {e}
               </div>

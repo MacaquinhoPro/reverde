@@ -116,7 +116,7 @@ export default function Profile() {
                 <ul className="mt-3 flex flex-wrap gap-2">
                   {o.items.map((i) => (
                     <li key={i.productId} className="flex items-center gap-2 rounded-xl bg-canvas px-2.5 py-1.5">
-                      <ProductThumb emoji={i.emoji} image={i.image} size="xs" />
+                      <ProductThumb emoji={i.emoji} image={i.image} photo={i.photo} alt={i.name} size="xs" />
                       <span className="text-[12.5px] font-medium text-ink">{i.name}</span>
                       <span className="text-[11.5px] text-ink-faint">×{i.qty}</span>
                     </li>

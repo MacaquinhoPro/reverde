@@ -7,7 +7,7 @@ import { Button } from '../../components/ui/Button';
 import { Badge, DiscountTag, RiskBadge } from '../../components/ui/Badge';
 import { finalPrice, learnFromHistory, productWeightKg } from '../../lib/ai';
 import { byEstablishment } from '../../data/establishments';
-import { cop, expiryLabel, formatDate, kg } from '../../lib/format';
+import { cop, expiryLabel, formatDate, kg, qtyLabel } from '../../lib/format';
 import type { Product } from '../../types';
 
 function Detail({ product }: { product: Product }) {
@@ -30,7 +30,7 @@ function Detail({ product }: { product: Product }) {
         <div className="space-y-4">
           <Card className="p-4 sm:p-5">
             <div className="flex flex-col gap-4 sm:flex-row">
-              <ProductThumb emoji={product.emoji} image={product.image} size="lg" />
+              <ProductThumb emoji={product.emoji} image={product.image} photo={product.photo} alt={product.name} size="lg" />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <RiskBadge level={risk.level} score={risk.score} />
@@ -49,7 +49,7 @@ function Detail({ product }: { product: Product }) {
 
             <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
               {[
-                { icon: Boxes, label: 'Stock', value: `${product.quantity} ${product.unit}s` },
+                { icon: Boxes, label: 'Stock', value: qtyLabel(product.quantity, product.unit) },
                 { icon: CalendarClock, label: 'Vence', value: formatDate(product.expiryDate), hint: expiryLabel(product.expiryDate) },
                 { icon: TrendingDown, label: 'Precio Reverde', value: cop(finalPrice(product)), hint: product.discountPercent > 0 ? `antes ${cop(product.originalPrice)}` : 'sin descuento' },
                 { icon: Boxes, label: 'Peso en riesgo', value: kg(productWeightKg(product)) },
@@ -73,7 +73,7 @@ function Detail({ product }: { product: Product }) {
           <Card className="p-4 sm:p-5">
             <SectionTitle title="Publicar en el marketplace" subtitle="Así verán los clientes este producto en Reverde." />
             <div className="mt-4 overflow-hidden rounded-2xl border border-black/5">
-              <ProductThumb emoji={product.emoji} image={product.image} size="full" className="h-28 rounded-none text-5xl">
+              <ProductThumb emoji={product.emoji} image={product.image} photo={product.photo} alt={product.name} size="full" className="h-28 rounded-none text-5xl">
                 <span className="absolute left-3 top-3">
                   <DiscountTag percent={product.discountPercent} />
                 </span>

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useEstablishmentData } from '../../hooks/useEstablishmentData';
 import { useApp } from '../../store/AppContext';
 import { finalPrice } from '../../lib/ai';
-import { cop, expiryLabel, kg } from '../../lib/format';
+import { cop, expiryLabel, kg, qtyLabel } from '../../lib/format';
 import { Card, EmptyState, KpiCard, ProductThumb, SectionTitle } from '../../components/ui/Primitives';
 import { Button } from '../../components/ui/Button';
 import { DiscountTag, RiskBadge } from '../../components/ui/Badge';
@@ -51,7 +51,7 @@ export default function MarketplaceAdmin() {
           {published.map(({ product, risk }) => (
             <Card key={product.id} className="overflow-hidden p-0">
               <div className="relative">
-                <ProductThumb emoji={product.emoji} image={product.image} size="full" className="h-28 rounded-none text-5xl" />
+                <ProductThumb emoji={product.emoji} image={product.image} photo={product.photo} alt={product.name} size="full" className="h-28 rounded-none text-5xl" />
                 <span className="absolute left-3 top-3">
                   <DiscountTag percent={product.discountPercent} />
                 </span>
@@ -67,7 +67,7 @@ export default function MarketplaceAdmin() {
                   <RiskBadge level={risk.level} score={risk.score} size="sm" showScore={false} />
                 </div>
                 <p className="mt-0.5 text-[12px] text-ink-soft">
-                  {product.quantity} {product.unit}s · {expiryLabel(product.expiryDate)} · {kg(product.weightPerUnitKg * product.quantity)}
+                  {qtyLabel(product.quantity, product.unit)} · {expiryLabel(product.expiryDate)} · {kg(product.weightPerUnitKg * product.quantity)}
                 </p>
                 <div className="mt-2 flex items-end gap-2">
                   <span className="text-[17px] font-extrabold text-brand-700">{cop(finalPrice(product))}</span>
@@ -117,7 +117,7 @@ export default function MarketplaceAdmin() {
           <ul className="mt-4 space-y-2">
             {candidates.map(({ product, risk, recommendation }) => (
               <li key={product.id} className="flex items-center gap-3 rounded-xl border border-black/5 p-3">
-                <ProductThumb emoji={product.emoji} image={product.image} size="sm" />
+                <ProductThumb emoji={product.emoji} image={product.image} photo={product.photo} alt={product.name} size="sm" />
                 <div className="min-w-0 flex-1">
                   <Link to={`/app/alertas/${product.id}`} className="truncate text-[13.5px] font-bold text-ink hover:text-brand-700">
                     {product.name}

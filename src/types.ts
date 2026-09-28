@@ -49,7 +49,10 @@ export interface Product {
   description: string;
   category: Category;
   emoji: string;
+  /** Gradiente de respaldo (clases Tailwind) mientras carga o si falla la foto. */
   image: string;
+  /** Foto real del producto servida desde /public/img/productos. */
+  photo?: string;
   quantity: number;
   unit: Unit;
   weightPerUnitKg: number;
@@ -128,6 +131,7 @@ export interface OrderItem {
   name: string;
   emoji: string;
   image: string;
+  photo?: string;
   qty: number;
   unitOriginalPrice: number;
   unitPrice: number;
@@ -158,6 +162,7 @@ export interface Sale {
   productId: string;
   productName: string;
   emoji: string;
+  photo?: string;
   customer: string;
   establishmentId: string;
   qty: number;
@@ -167,6 +172,8 @@ export interface Sale {
   recovered: number;
   wasteAvoidedKg: number;
   channel: 'marketplace' | 'tienda';
+  /** Marca las ventas del histórico simulado, para poder reanclarlas a la fecha de hoy. */
+  seed?: boolean;
 }
 
 /** Memoria de aprendizaje: resultados de promociones pasadas por categoría */
@@ -178,6 +185,7 @@ export interface PromoOutcome {
   daysToSell: number;
   establishmentId: string;
   date: string;
+  seed?: boolean;
 }
 
 export interface Toast {

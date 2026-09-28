@@ -4,7 +4,7 @@ import { AlertTriangle, BellOff, CheckCircle2, ChevronRight, Percent, Sparkles, 
 import { useEstablishmentData } from '../../hooks/useEstablishmentData';
 import { useApp } from '../../store/AppContext';
 import { computeRisk, finalPrice } from '../../lib/ai';
-import { cop, cx, expiryLabel, relativeTime } from '../../lib/format';
+import { cop, cx, expiryLabel, qtyLabel, relativeTime } from '../../lib/format';
 import { Card, EmptyState, ProductThumb, SectionTitle } from '../../components/ui/Primitives';
 import { Button } from '../../components/ui/Button';
 import { RiskBadge } from '../../components/ui/Badge';
@@ -80,14 +80,14 @@ export default function Alerts() {
 
                   <div className="p-4">
                     <div className="flex gap-3.5">
-                      <ProductThumb emoji={product.emoji} image={product.image} size="md" />
+                      <ProductThumb emoji={product.emoji} image={product.image} photo={product.photo} alt={product.name} size="md" />
                       <div className="min-w-0 flex-1">
                         <p className="text-[15px] font-bold leading-snug text-ink">{alert.title}</p>
                         <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">{alert.body}</p>
                         <div className="mt-2.5 flex flex-wrap items-center gap-2">
                           <RiskBadge level={risk.level} score={risk.score} size="sm" />
                           <span className="text-[12px] text-ink-faint">
-                            {product.quantity} {product.unit}s · {cop(finalPrice(product))} · {expiryLabel(product.expiryDate)}
+                            {qtyLabel(product.quantity, product.unit)} · {cop(finalPrice(product))} · {expiryLabel(product.expiryDate)}
                           </span>
                         </div>
                       </div>

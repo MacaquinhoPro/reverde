@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Sparkles, Trash2 } from 'lucide-react';
 import type { Category, Product, Unit } from '../types';
-import { CATEGORIES, CATEGORY_STYLE, EMOJI_OPTIONS, UNITS } from '../data/catalog';
+import { CATEGORIES, CATEGORY_STYLE, EMOJI_OPTIONS, UNITS, photoForProduct } from '../data/catalog';
 import { useApp } from '../store/AppContext';
 import { computeRisk, finalPrice } from '../lib/ai';
 import { addDays, cop, cx } from '../lib/format';
@@ -94,6 +94,7 @@ export function ProductFormModal({
     category: draft.category,
     emoji: draft.emoji,
     image: CATEGORY_STYLE[draft.category].image,
+    photo: photoForProduct(draft.name, draft.category),
     quantity: draft.quantity,
     unit: draft.unit,
     weightPerUnitKg: draft.weightPerUnitKg,
@@ -268,7 +269,14 @@ export function ProductFormModal({
         {/* Vista previa */}
         <aside className="space-y-3 sm:sticky sm:top-2 sm:self-start">
           <div className="card overflow-hidden">
-            <ProductThumb emoji={draft.emoji} image={CATEGORY_STYLE[draft.category].image} size="full" className="h-32 rounded-none text-5xl" />
+            <ProductThumb
+              emoji={draft.emoji}
+              image={CATEGORY_STYLE[draft.category].image}
+              photo={preview.photo}
+              alt={preview.name}
+              size="full"
+              className="h-32 rounded-none text-5xl"
+            />
             <div className="p-3.5">
               <p className="text-[14px] font-bold text-ink">{draft.name || 'Nuevo producto'}</p>
               <p className="mt-0.5 text-[12px] text-ink-soft">{draft.category}</p>

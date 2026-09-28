@@ -216,7 +216,7 @@ export default function Checkout() {
             <ul className="mt-3 space-y-2.5">
               {lines.map(({ line, product }) => (
                 <li key={product.id} className="flex items-center gap-3">
-                  <ProductThumb emoji={product.emoji} image={product.image} size="xs" />
+                  <ProductThumb emoji={product.emoji} image={product.image} photo={product.photo} alt={product.name} size="xs" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[13px] font-semibold text-ink">{product.name}</p>
                     <p className="text-[11.5px] text-ink-soft">{line.qty} × {cop(finalPrice(product))}</p>

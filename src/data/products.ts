@@ -81,6 +81,7 @@ export function buildSeedProducts(): Product[] {
       category: c.category,
       emoji: c.emoji,
       image: c.image,
+      photo: c.photo,
       quantity: qty,
       unit: c.unit,
       weightPerUnitKg: c.weightPerUnitKg,

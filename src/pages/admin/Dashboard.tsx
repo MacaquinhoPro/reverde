@@ -15,7 +15,7 @@ import { useEstablishmentData } from '../../hooks/useEstablishmentData';
 import { useApp } from '../../store/AppContext';
 import { aggregate, inventoryStats, monthOverMonth, riskByCategory, salesInLastDays, weeklySeries } from '../../lib/metrics';
 import { finalPrice } from '../../lib/ai';
-import { cop, copCompact, expiryLabel, kg } from '../../lib/format';
+import { cop, copCompact, expiryLabel, kg, qtyLabel } from '../../lib/format';
 import { Card, KpiCard, ProductThumb, SectionTitle } from '../../components/ui/Primitives';
 import { Button } from '../../components/ui/Button';
 import { RiskBadge } from '../../components/ui/Badge';
@@ -153,11 +153,11 @@ export default function AdminDashboard() {
                   to={`/app/alertas/${product.id}`}
                   className="flex items-center gap-3 rounded-xl border border-black/5 p-3 transition-all hover:border-brand-300 hover:bg-brand-50/50"
                 >
-                  <ProductThumb emoji={product.emoji} image={product.image} size="sm" />
+                  <ProductThumb emoji={product.emoji} image={product.image} photo={product.photo} alt={product.name} size="sm" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[13.5px] font-bold text-ink">{product.name}</p>
                     <p className="mt-0.5 truncate text-[12px] text-ink-soft">
-                      {product.quantity} {product.unit}s · {expiryLabel(product.expiryDate)} · {cop(finalPrice(product))}
+                      {qtyLabel(product.quantity, product.unit)} · {expiryLabel(product.expiryDate)} · {cop(finalPrice(product))}
                     </p>
                   </div>
                   <RiskBadge level={risk.level} score={risk.score} size="sm" />
