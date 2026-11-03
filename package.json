@@ -5,9 +5,34 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:api": "npm run dev -w @reverde/server",
+    "dev:all": "npm run db:up && concurrently -n api,web -c magenta,green \"npm:dev:api\" \"npm:dev\"",
     "build": "tsc -b && vite build",
+    "build:api": "npm run build -w @reverde/server",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:unit": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:qa": "playwright test",
+    "test:qa:ui": "playwright test --ui",
+    "test:qa:report": "playwright show-report",
+    "test:load": "vitest run --config vitest.load.config.ts",
+    "test:load:http": "node tests/load/http-load.mjs",
+    "test:load:http:smoke": "node tests/load/http-load.mjs --smoke",
+    "test:all": "npm run test:unit && npm run test:load && npm run test:qa",
+    "test:api": "npm run test -w @reverde/server",
+    "typecheck": "tsc -b && npm run typecheck -w @reverde/server",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose down",
+    "db:migrate": "npm run migrate:dev -w @reverde/server",
+    "db:deploy": "npm run migrate:deploy -w @reverde/server",
+    "db:reset": "npm run migrate:reset -w @reverde/server",
+    "db:seed": "npm run seed -w @reverde/server",
+    "db:studio": "npm exec -w @reverde/server -- prisma studio",
+    "db:backup": "bash scripts/db-backup.sh",
+    "db:restore": "bash scripts/db-restore.sh"
   },
   "dependencies": {
     "lucide-react": "^1.47.0",
@@ -17,15 +42,28 @@
     "recharts": "^3.10.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
+    "@vitest/coverage-v8": "^3.2.7",
+    "autocannon": "^8.0.0",
     "autoprefixer": "^10.6.1",
+    "concurrently": "^10.0.6",
+    "jsdom": "^29.1.1",
     "oxlint": "^1.81.0",
     "postcss": "^8.5.28",
     "tailwindcss": "^3.4.17",
     "typescript": "~6.0.2",
-    "vite": "^8.3.0"
-  }
+    "vite": "^8.3.0",
+    "vitest": "^3.2.7"
+  },
+  "workspaces": [
+    "server"
+  ]
 }

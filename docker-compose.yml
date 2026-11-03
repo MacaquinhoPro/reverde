@@ -1,0 +1,63 @@
+# Servicios locales de Reverde.
+#   docker compose up -d db        → solo PostgreSQL (lo que usa `npm run dev:all`)
+#   docker compose up -d db db_test → base de datos de pruebas aparte
+#   docker compose --profile full up → además la API en contenedor
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: reverde-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: reverde
+      POSTGRES_PASSWORD: reverde
+      POSTGRES_DB: reverde_dev
+    ports:
+      - '5433:5432'
+    volumes:
+      - reverde_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U reverde -d reverde_dev']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  db_test:
+    image: postgres:16-alpine
+    container_name: reverde-db-test
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: reverde
+      POSTGRES_PASSWORD: reverde
+      POSTGRES_DB: reverde_test
+    ports:
+      - '5434:5432'
+    # Las pruebas se ejecutan en memoria (tmpfs): rápidas y sin residuos.
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U reverde -d reverde_test']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  api:
+    profiles: ['full']
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    container_name: reverde-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: '4000'
+      DATABASE_URL: postgresql://reverde:reverde@db:5432/reverde_dev?schema=public
+    env_file:
+      - .env.development
+    ports:
+      - '4000:4000'
+
+volumes:
+  reverde_db:

@@ -1,0 +1,744 @@
+// Reverde · Esquema de base de datos (PostgreSQL)
+// Convenciones:
+//  - Dinero en pesos colombianos (COP) como enteros. El COP no usa decimales.
+//    Los montos que viajan a la pasarela van en centavos (amountInCents).
+//  - Datos personales recuperables (teléfono, documento) se guardan cifrados
+//    con AES-256-GCM (ver src/lib/crypto.ts). Las contraseñas usan Argon2id.
+//  - Todo lo que pertenece a un establecimiento lleva establishmentId para
+//    poder aislar la información por inquilino (multi-tenant).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/* ─────────────────────────── Enums ─────────────────────────── */
+
+enum UserRole {
+  supermercado
+  restaurante
+  cliente
+  superadmin
+}
+
+enum UserStatus {
+  activo
+  pendiente
+  suspendido
+}
+
+enum EstablishmentType {
+  supermercado
+  restaurante
+}
+
+enum EstablishmentStatus {
+  activo
+  pendiente
+  suspendido
+}
+
+enum MembershipRole {
+  owner
+  manager
+  staff
+}
+
+enum RequestStatus {
+  pendiente
+  aprobada
+  rechazada
+}
+
+enum TokenPurpose {
+  email_verification
+  password_reset
+}
+
+enum Unit {
+  unidad
+  kg
+  g
+  litro
+  bandeja
+  caja
+}
+
+enum ProductStatus {
+  en_inventario
+  publicado
+  agotado
+  vencido
+  donado
+}
+
+enum ProductOrigin {
+  seed
+  user
+}
+
+enum RiskLevel {
+  bajo
+  medio
+  alto
+}
+
+enum MovementType {
+  ingreso
+  ajuste
+  reserva
+  liberacion
+  venta
+  donacion
+  merma
+}
+
+enum AlertStatus {
+  abierta
+  silenciada
+  resuelta
+}
+
+enum ListingStatus {
+  activa
+  pausada
+  agotada
+}
+
+enum CartStatus {
+  activo
+  convertido
+  abandonado
+}
+
+enum OrderMode {
+  compra
+  reserva
+}
+
+enum PaymentMethod {
+  tarjeta
+  pse
+  nequi
+  bancolombia
+  establecimiento
+}
+
+/// Ciclo de vida del pago de una orden. Es la fuente de verdad del cobro.
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  FAILED
+  CANCELLED
+  EXPIRED
+  REFUNDED
+}
+
+/// Estado logístico, independiente del pago (lo que ve la persona compradora).
+enum FulfillmentStatus {
+  reservado
+  confirmado
+  entregado
+  anulado
+}
+
+enum PaymentProvider {
+  wompi
+  mercadopago
+  mock
+  efectivo
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  DECLINED
+  VOIDED
+  ERROR
+  EXPIRED
+  REFUNDED
+}
+
+enum SalesChannel {
+  marketplace
+  tienda
+}
+
+/* ─────────────────── Identidad, roles y sesiones ─────────────────── */
+
+model Role {
+  code        UserRole         @id
+  name        String
+  description String
+  permissions RolePermission[]
+}
+
+model Permission {
+  code        String           @id
+  description String
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  roleCode       UserRole
+  permissionCode String
+  role           Role       @relation(fields: [roleCode], references: [code], onDelete: Cascade)
+  permission     Permission @relation(fields: [permissionCode], references: [code], onDelete: Cascade)
+
+  @@id([roleCode, permissionCode])
+}
+
+model User {
+  id              String     @id @default(uuid())
+  email           String     @unique
+  name            String
+  passwordHash    String
+  role            UserRole   @default(cliente)
+  status          UserStatus @default(activo)
+  emailVerifiedAt DateTime?
+  avatarHue       Int        @default(152)
+  /// Teléfono cifrado (AES-256-GCM). Nunca en texto plano ni hasheado:
+  /// es un dato que el negocio necesita poder leer de vuelta.
+  phoneEncrypted  String?
+  /// Documento de identidad cifrado, usado por algunas pasarelas (PSE).
+  documentEncrypted String?
+  isDemo          Boolean    @default(false)
+  failedLogins    Int        @default(0)
+  lockedUntil     DateTime?
+  lastLoginAt     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  deletedAt       DateTime?
+
+  sessions           Session[]
+  tokens             VerificationToken[]
+  memberships        EstablishmentUser[]
+  requests           EstablishmentRequest[] @relation("requester")
+  reviewedRequests   EstablishmentRequest[] @relation("reviewer")
+  cart               Cart?
+  orders             Order[]
+  notifications      Notification[]
+  auditLogs          AuditLog[]
+  createdProducts    Product[]              @relation("productCreator")
+  movements          InventoryMovement[]
+  appliedRecs        Recommendation[]
+
+  @@index([role])
+  @@index([status])
+}
+
+model Session {
+  id         String    @id @default(uuid())
+  userId     String
+  /// SHA-256 del token opaco. El token en claro solo vive en la cookie.
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  lastUsedAt DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+  revokedAt  DateTime?
+  ipHash     String?
+  userAgent  String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model VerificationToken {
+  id        String       @id @default(uuid())
+  userId    String
+  purpose   TokenPurpose
+  tokenHash String       @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+}
+
+/// Bitácora de intentos de inicio de sesión: alimenta el bloqueo por fuerza bruta.
+model LoginAttempt {
+  id        String   @id @default(uuid())
+  email     String
+  ipHash    String
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([ipHash, createdAt])
+}
+
+/* ──────────────────────── Establecimientos ──────────────────────── */
+
+model Establishment {
+  id          String              @id @default(uuid())
+  slug        String              @unique
+  name        String
+  type        EstablishmentType
+  address     String
+  city        String
+  schedule    String
+  logoHue     Int                 @default(152)
+  rating      Float               @default(4.5)
+  /// Coordenadas reales (opcionales) para geolocalización.
+  latitude    Float?
+  longitude   Float?
+  /// Posición porcentual en el mapa simulado que ya usa el frontend.
+  mapX        Float               @default(50)
+  mapY        Float               @default(50)
+  distanceKm  Float               @default(1)
+  status      EstablishmentStatus @default(pendiente)
+  joinedAt    DateTime            @default(now())
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  members       EstablishmentUser[]
+  products      Product[]
+  movements     InventoryMovement[]
+  alerts        ExpirationAlert[]
+  recommendations Recommendation[]
+  listings      MarketplaceListing[]
+  orderItems    OrderItem[]
+  sales         Sale[]
+  promoOutcomes PromoOutcome[]
+  notifications Notification[]
+  request       EstablishmentRequest?
+
+  @@index([status])
+  @@index([type])
+}
+
+model EstablishmentUser {
+  id              String         @id @default(uuid())
+  establishmentId String
+  userId          String
+  role            MembershipRole @default(staff)
+  createdAt       DateTime       @default(now())
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([establishmentId, userId])
+  @@index([userId])
+}
+
+/// Solicitud pública para abrir una cuenta de establecimiento.
+/// El rol nunca se autoasigna: lo aprueba un superadministrador.
+model EstablishmentRequest {
+  id                String            @id @default(uuid())
+  userId            String
+  establishmentName String
+  type              EstablishmentType
+  address           String
+  city              String
+  schedule          String            @default("Lun a Dom · 8:00 – 20:00")
+  contactPhoneEnc   String?
+  status            RequestStatus     @default(pendiente)
+  notes             String?
+  reviewedById      String?
+  reviewedAt        DateTime?
+  establishmentId   String?           @unique
+  createdAt         DateTime          @default(now())
+
+  user          User           @relation("requester", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy    User?          @relation("reviewer", fields: [reviewedById], references: [id])
+  establishment Establishment? @relation(fields: [establishmentId], references: [id])
+
+  @@index([status])
+  @@index([userId])
+}
+
+/* ───────────────────── Productos e inventario ───────────────────── */
+
+model Product {
+  id               String        @id @default(uuid())
+  establishmentId  String
+  name             String
+  description      String
+  category         String
+  emoji            String        @default("🥬")
+  /// Gradiente Tailwind de respaldo que ya usa el frontend.
+  image            String        @default("from-[#EFF8EE] to-[#D3E9CE]")
+  photo            String?
+  unit             Unit
+  weightPerUnitKg  Float
+  entryDate        DateTime
+  expiryDate       DateTime
+  /// Precio de lista en COP (entero).
+  originalPrice    Int
+  discountPercent  Int           @default(0)
+  status           ProductStatus @default(en_inventario)
+  dailySales       Float         @default(1)
+  demandTrend      Float         @default(0)
+  featured         Boolean       @default(false)
+  isRescueBox      Boolean       @default(false)
+  origin           ProductOrigin @default(user)
+  createdById      String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  deletedAt        DateTime?
+
+  establishment  Establishment       @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  createdBy      User?               @relation("productCreator", fields: [createdById], references: [id])
+  inventory      Inventory?
+  movements      InventoryMovement[]
+  alert          ExpirationAlert?
+  recommendation Recommendation?
+  listing        MarketplaceListing?
+  cartItems      CartItem[]
+  orderItems     OrderItem[]
+  sales          Sale[]
+
+  @@index([establishmentId, status])
+  @@index([expiryDate])
+  @@index([category])
+  @@index([deletedAt])
+}
+
+/// Stock físico y reservado, separado del producto para aislar las
+/// mutaciones de existencias (y poder bloquear solo esta fila).
+model Inventory {
+  id               String   @id @default(uuid())
+  productId        String   @unique
+  quantity         Int      @default(0)
+  reservedQuantity Int      @default(0)
+  updatedAt        DateTime @updatedAt
+
+  product   Product             @relation(fields: [productId], references: [id], onDelete: Cascade)
+  movements InventoryMovement[]
+}
+
+model InventoryMovement {
+  id              String       @id @default(uuid())
+  inventoryId     String
+  productId       String
+  establishmentId String
+  type            MovementType
+  /// Positivo entra, negativo sale.
+  quantity        Int
+  reason          String?
+  orderId         String?
+  userId          String?
+  createdAt       DateTime     @default(now())
+
+  inventory     Inventory     @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  product       Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  order         Order?        @relation(fields: [orderId], references: [id])
+  user          User?         @relation(fields: [userId], references: [id])
+
+  @@index([establishmentId, createdAt])
+  @@index([productId, createdAt])
+  @@index([orderId])
+}
+
+model ExpirationAlert {
+  id              String      @id @default(uuid())
+  productId       String      @unique
+  establishmentId String
+  level           RiskLevel
+  riskScore       Int
+  wasteProbability Int        @default(0)
+  title           String
+  body            String
+  status          AlertStatus @default(abierta)
+  snoozedUntil    DateTime?
+  resolvedAt      DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  product       Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+
+  @@index([establishmentId, status, level])
+}
+
+model Recommendation {
+  id                String    @id @default(uuid())
+  productId         String    @unique
+  establishmentId   String
+  title             String
+  rationale         String
+  learningNote      String?
+  suggestedDiscount Int
+  confidence        Int
+  riskScore         Int
+  /// Lista de acciones sugeridas: [{ type, label, primary }]
+  actions           Json
+  appliedAction     String?
+  appliedAt         DateTime?
+  appliedById       String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  product       Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  appliedBy     User?         @relation(fields: [appliedById], references: [id])
+
+  @@index([establishmentId, riskScore])
+}
+
+model MarketplaceListing {
+  id              String        @id @default(uuid())
+  productId       String        @unique
+  establishmentId String
+  status          ListingStatus @default(activa)
+  featured        Boolean       @default(false)
+  publishedAt     DateTime      @default(now())
+  unpublishedAt   DateTime?
+
+  product       Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+
+  @@index([status, publishedAt])
+  @@index([establishmentId])
+}
+
+/* ───────────────────────── Carrito y órdenes ───────────────────────── */
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique
+  status    CartStatus @default(activo)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  productId String
+  quantity  Int
+  addedAt   DateTime @default(now())
+
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, productId])
+}
+
+model Order {
+  id                String            @id @default(uuid())
+  code              String            @unique
+  userId            String
+  mode              OrderMode
+  paymentMethod     PaymentMethod
+  status            OrderStatus       @default(PENDING_PAYMENT)
+  fulfillmentStatus FulfillmentStatus @default(reservado)
+  /// Totales calculados SIEMPRE en el backend, en COP.
+  subtotalCop       Int
+  totalCop          Int
+  savingsCop        Int
+  wasteAvoidedKg    Float
+  pickupWindow      String
+  /// Vencimiento de la reserva de stock si el pago no se completa.
+  expiresAt         DateTime?
+  paidAt            DateTime?
+  cancelledAt       DateTime?
+  /// Clave de idempotencia del cliente para no duplicar órdenes.
+  idempotencyKey    String?           @unique
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  user      User                @relation(fields: [userId], references: [id])
+  items     OrderItem[]
+  payments  Payment[]
+  movements InventoryMovement[]
+  sales     Sale[]
+
+  @@index([userId, createdAt])
+  @@index([status, expiresAt])
+}
+
+model OrderItem {
+  id                String  @id @default(uuid())
+  orderId           String
+  productId         String?
+  establishmentId   String
+  /// Copia inmutable del producto al momento de la compra.
+  name              String
+  emoji             String
+  image             String
+  photo             String?
+  quantity          Int
+  unitOriginalPrice Int
+  unitPrice         Int
+  weightKg          Float
+  category          String
+  discountPercent   Int     @default(0)
+
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product       Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
+  establishment Establishment @relation(fields: [establishmentId], references: [id])
+  sales         Sale[]
+
+  @@index([orderId])
+  @@index([establishmentId])
+}
+
+/* ──────────────────────────── Pagos ──────────────────────────── */
+
+model Payment {
+  id                    String          @id @default(uuid())
+  orderId               String
+  provider              PaymentProvider
+  /// Referencia única enviada a la pasarela (entra en la firma de integridad).
+  reference             String          @unique
+  amountInCents         Int
+  currency              String          @default("COP")
+  status                PaymentStatus   @default(PENDING)
+  method                PaymentMethod?
+  providerTransactionId String?         @unique
+  checkoutUrl           String?
+  /// Clave de idempotencia: una sola intención de pago viva por orden.
+  idempotencyKey        String          @unique
+  expiresAt             DateTime?
+  paidAt                DateTime?
+  /// Último payload relevante del proveedor (sin datos de tarjeta).
+  providerSnapshot      Json?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  order  Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  events PaymentEvent[]
+
+  @@index([orderId])
+  @@index([status])
+}
+
+/// Cada notificación recibida de la pasarela. `eventId` es único: así un
+/// webhook reenviado no vuelve a mover inventario ni a cobrar.
+model PaymentEvent {
+  id             String          @id @default(uuid())
+  paymentId      String?
+  provider       PaymentProvider
+  eventId        String          @unique
+  eventType      String
+  transactionId  String?
+  reportedStatus String?
+  signatureValid Boolean         @default(false)
+  payload        Json
+  receivedAt     DateTime        @default(now())
+  processedAt    DateTime?
+  result         String?
+
+  payment Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+
+  @@index([paymentId])
+  @@index([provider, receivedAt])
+}
+
+/* ──────────────── Ventas, aprendizaje y operación ──────────────── */
+
+/// Libro de ventas: alimenta las métricas de impacto y los dashboards.
+/// Se escribe cuando un pago queda confirmado o cuando se dona producto.
+model Sale {
+  id              String       @id @default(uuid())
+  establishmentId String
+  productId       String?
+  orderId         String?
+  orderItemId     String?
+  productName     String
+  emoji           String       @default("🥬")
+  photo           String?
+  category        String
+  customerName    String
+  quantity        Int
+  originalPrice   Int
+  soldPrice       Int
+  discountPercent Int
+  recovered       Int
+  wasteAvoidedKg  Float
+  channel         SalesChannel @default(marketplace)
+  occurredAt      DateTime     @default(now())
+  isSeed          Boolean      @default(false)
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  product       Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
+  order         Order?        @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  orderItem     OrderItem?    @relation(fields: [orderItemId], references: [id], onDelete: SetNull)
+
+  @@index([establishmentId, occurredAt])
+  @@index([occurredAt])
+}
+
+/// Memoria de aprendizaje del motor de recomendaciones: qué descuento
+/// funcionó en cada categoría.
+model PromoOutcome {
+  id              String   @id @default(uuid())
+  establishmentId String
+  category        String
+  discountPercent Int
+  sellThrough     Int
+  daysToSell      Int
+  occurredAt      DateTime @default(now())
+  isSeed          Boolean  @default(false)
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+
+  @@index([category, occurredAt])
+  @@index([establishmentId])
+}
+
+model Notification {
+  id              String    @id @default(uuid())
+  userId          String?
+  establishmentId String?
+  type            String
+  title           String
+  body            String
+  data            Json?
+  readAt          DateTime?
+  createdAt       DateTime  @default(now())
+
+  user          User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  establishment Establishment? @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([establishmentId, readAt])
+}
+
+model AuditLog {
+  id              String   @id @default(uuid())
+  actorUserId     String?
+  actorRole       String?
+  action          String
+  entity          String
+  entityId        String?
+  establishmentId String?
+  ipHash          String?
+  userAgent       String?
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  actor User? @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId, createdAt])
+  @@index([entity, entityId])
+  @@index([action, createdAt])
+}
+
+/// Respuestas guardadas por clave de idempotencia (POST de órdenes y pagos).
+model IdempotencyRecord {
+  id             String   @id @default(uuid())
+  key            String   @unique
+  scope          String
+  userId         String?
+  requestHash    String
+  responseStatus Int?
+  responseBody   Json?
+  createdAt      DateTime @default(now())
+  expiresAt      DateTime
+
+  @@index([expiresAt])
+}

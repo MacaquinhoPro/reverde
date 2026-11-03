@@ -12,6 +12,7 @@ import type {
   ActionType,
   CartLine,
   Order,
+  OrderConsent,
   OrderMode,
   PaymentMethod,
   Product,
@@ -57,7 +58,8 @@ interface AppApi extends AppState {
   removeFromCart: (productId: string) => void;
   clearCart: () => void;
 
-  checkout: (mode: OrderMode, payment: PaymentMethod) => Order | null;
+  /** `consent` guarda la autorización específica que el cliente dio al pagar. */
+  checkout: (mode: OrderMode, payment: PaymentMethod, consent?: OrderConsent) => Order | null;
 
   toast: (t: Omit<Toast, 'id'>) => void;
   dismissToast: (id: string) => void;
@@ -301,7 +303,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   /* ── Checkout simulado ──────────────────────────────────────────────── */
   const checkout: AppApi['checkout'] = useCallback(
-    (mode, payment) => {
+    (mode, payment, consent) => {
       const activeUser = userRef.current;
       if (!activeUser || cart.length === 0) return null;
       const now = new Date().toISOString();
@@ -342,6 +344,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         establishmentIds: [...new Set(items.map((i) => i.establishmentId))],
         status: mode === 'reserva' ? 'reservado' : 'confirmado',
         pickupWindow: mode === 'reserva' ? 'Hoy, 17:00 – 20:00' : 'Hoy, 12:00 – 21:00',
+        consent,
       };
 
       // Las ventas alimentan las métricas de impacto del establecimiento.

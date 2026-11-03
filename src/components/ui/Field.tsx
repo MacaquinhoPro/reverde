@@ -1,5 +1,6 @@
+import { useId } from 'react';
 import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
-import { Search } from 'lucide-react';
+import { Check, Search } from 'lucide-react';
 import { cx } from '../../lib/format';
 
 export function Field({
@@ -127,5 +128,59 @@ export function Toggle({
       </span>
       {label}
     </button>
+  );
+}
+
+/**
+ * Casilla de verificación con etiqueta rica. Nunca llega marcada por defecto:
+ * las autorizaciones de datos personales exigen una manifestación expresa del
+ * titular (Decreto 1074 de 2015, art. 2.2.2.25.2.3).
+ */
+export function Checkbox({
+  checked,
+  onChange,
+  label,
+  hint,
+  required,
+  className,
+  id,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: ReactNode;
+  hint?: ReactNode;
+  required?: boolean;
+  className?: string;
+  id?: string;
+}) {
+  const auto = useId();
+  const inputId = id ?? auto;
+  return (
+    <div className={cx('flex items-start gap-3', className)}>
+      <span className="relative mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center">
+        <input
+          id={inputId}
+          type="checkbox"
+          checked={checked}
+          required={required}
+          onChange={(e) => onChange(e.target.checked)}
+          className={cx(
+            'peer h-5 w-5 cursor-pointer appearance-none rounded-[6px] border bg-white transition-all duration-200',
+            'checked:border-brand-700 checked:bg-brand-700',
+            'focus-visible:ring-4 focus-visible:ring-brand-200',
+            checked ? 'border-brand-700' : 'border-black/20 hover:border-brand-400',
+          )}
+        />
+        <Check
+          className="pointer-events-none absolute h-3.5 w-3.5 scale-50 text-white opacity-0 transition-all duration-200 peer-checked:scale-100 peer-checked:opacity-100"
+          strokeWidth={3.2}
+        />
+      </span>
+      <label htmlFor={inputId} className="cursor-pointer select-none text-[13.5px] leading-relaxed text-ink">
+        {label}
+        {required && <span className="ml-1 font-bold text-[#B4453D]" title="Obligatorio">*</span>}
+        {hint && <span className="mt-1 block text-[12.5px] leading-relaxed text-ink-soft">{hint}</span>}
+      </label>
+    </div>
   );
 }

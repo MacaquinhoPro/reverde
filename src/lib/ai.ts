@@ -218,10 +218,11 @@ export function buildRecommendation(
         ? `Aún hay margen de maniobra, pero al ritmo actual de ventas no se alcanza a rotar todo el inventario antes del vencimiento.`
         : `El inventario rota a buen ritmo y alcanza a venderse antes del vencimiento. No es necesario sacrificar margen.`;
 
+  // «promoción» pierde la tilde en plural: concatenar «es» daba «promociónes».
+  const promoLabel =
+    learned && learned.samples === 1 ? 'promoción anterior' : 'promociones anteriores';
   const learningNote = learned
-    ? `Basándonos en ${learned.samples} promoción${learned.samples === 1 ? '' : 'es'} anterior${
-        learned.samples === 1 ? '' : 'es'
-      } en ${p.category.toLowerCase()}, un descuento del ${learned.discount} % logró vender el ${learned.sellThrough} % del inventario en ${learned.days} ${learned.days === 1 ? 'día' : 'días'} antes del vencimiento.`
+    ? `Basándonos en ${learned.samples} ${promoLabel} en ${p.category.toLowerCase()}, un descuento del ${learned.discount} % logró vender el ${learned.sellThrough} % del inventario en ${learned.days} ${learned.days === 1 ? 'día' : 'días'} antes del vencimiento.`
     : undefined;
 
   return {

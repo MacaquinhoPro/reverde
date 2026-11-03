@@ -23,3 +23,19 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# Variables de entorno (solo se versionan los *.example)
+.env
+.env.*
+!.env.example
+!.env.development.example
+!.env.production.example
+
+# Respaldos de base de datos
+/backups
+
+# Pruebas
+/coverage
+/playwright-report
+/test-results
+/tests/load/k6-summary.json

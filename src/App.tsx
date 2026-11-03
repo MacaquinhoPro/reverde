@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import type { Role } from './types';
 import { AppProvider, useApp } from './store/AppContext';
+import { ConsentProvider, useConsent } from './store/ConsentContext';
+import { ConsentGate } from './components/legal/ConsentGate';
 import { AppShell, type NavItem } from './components/layout/AppShell';
 import { ClientShell } from './components/layout/ClientShell';
 import { Toaster } from './components/ui/Toaster';
@@ -27,6 +29,7 @@ import { homeForRole } from './lib/routes';
 
 import Landing from './pages/Landing';
 import Login from './pages/Login';
+import LegalPage from './pages/legal/Legal';
 
 import AdminDashboard from './pages/admin/Dashboard';
 import Inventory from './pages/admin/Inventory';
@@ -52,8 +55,25 @@ import Publications from './pages/super/Publications';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
-  useEffect(() => window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }), [pathname]);
+  // Las llaves son necesarias: si el efecto devuelve el resultado de
+  // `scrollTo`, React lo toma por una función de limpieza y rompe el árbol.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+  }, [pathname]);
   return null;
+}
+
+/**
+ * Pide la autorización de tratamiento de datos antes de usar la plataforma.
+ * Las páginas públicas —la portada y el centro legal— quedan fuera: el titular
+ * debe poder leer los documentos sin autorizar nada primero.
+ */
+function ConsentBoundary() {
+  const { hasConsent } = useConsent();
+  const { pathname } = useLocation();
+  const isPublic = pathname === '/' || pathname.startsWith('/legal');
+  if (hasConsent || isPublic) return null;
+  return <ConsentGate />;
 }
 
 /** Protege rutas según el rol de la sesión simulada. */
@@ -107,6 +127,8 @@ function Shell() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/legal" element={<LegalPage />} />
+        <Route path="/legal/:slug" element={<LegalPage />} />
 
         {/* ── Establecimientos ─────────────────────────────────────── */}
         <Route
@@ -172,6 +194,7 @@ function Shell() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <ConsentBoundary />
       <Toaster />
     </>
   );
@@ -179,10 +202,12 @@ function Shell() {
 
 export default function App() {
   return (
-    <AppProvider>
-      <BrowserRouter>
-        <Shell />
-      </BrowserRouter>
-    </AppProvider>
+    <ConsentProvider>
+      <AppProvider>
+        <BrowserRouter>
+          <Shell />
+        </BrowserRouter>
+      </AppProvider>
+    </ConsentProvider>
   );
 }

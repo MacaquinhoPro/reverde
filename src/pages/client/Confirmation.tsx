@@ -1,5 +1,5 @@
-import { useParams } from 'react-router-dom';
-import { CalendarCheck, CheckCircle2, Clock, Copy, Droplets, Leaf, MapPin, Receipt, ShoppingBag } from 'lucide-react';
+import { Link, useParams } from 'react-router-dom';
+import { CalendarCheck, CheckCircle2, Clock, Copy, Droplets, Leaf, MapPin, Receipt, ShieldCheck, ShoppingBag } from 'lucide-react';
 import { useApp } from '../../store/AppContext';
 import { byEstablishment } from '../../data/establishments';
 import { co2FromKg, waterFromKg } from '../../lib/metrics';
@@ -153,6 +153,27 @@ export default function Confirmation() {
           </div>
         </div>
       </Card>
+
+      {/* Prueba de la autorización de datos de este pedido */}
+      {order.consent && (
+        <Card className="flex items-start gap-3 p-4">
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand-700" />
+          <div>
+            <p className="text-[13.5px] font-bold text-ink">Autorización de tratamiento de datos</p>
+            <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
+              Registrada el {formatDateTime(order.consent.acceptedAt)} sobre la versión{' '}
+              {order.consent.version} de la política. Finalidad: {order.consent.purpose.toLowerCase()}
+            </p>
+            <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-faint">
+              Puedes consultarla o revocarla en{' '}
+              <Link to="/tienda/perfil" className="font-semibold text-brand-700 hover:underline">
+                Perfil → Privacidad y datos personales
+              </Link>
+              .
+            </p>
+          </div>
+        </Card>
+      )}
 
       <div className="flex flex-col gap-2 sm:flex-row">
         <Button block to="/tienda/perfil" variant="outline" icon={<CalendarCheck className="h-4 w-4" />}>

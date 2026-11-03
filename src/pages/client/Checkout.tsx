@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Banknote, Building2, CalendarCheck, CreditCard, Leaf, Lock, ShieldCheck } from 'lucide-react';
 import type { OrderMode, PaymentMethod } from '../../types';
 import { useApp } from '../../store/AppContext';
@@ -8,8 +8,9 @@ import { finalPrice } from '../../lib/ai';
 import { cop, cx, kg } from '../../lib/format';
 import { Card, EmptyState, ProductThumb, SectionTitle } from '../../components/ui/Primitives';
 import { Button } from '../../components/ui/Button';
-import { Field, Input, Select } from '../../components/ui/Field';
+import { Checkbox, Field, Input, Select } from '../../components/ui/Field';
 import { DEMO_PASSWORD } from '../../data/users';
+import { LEGAL_VERSION, RESPONSABLE } from '../../data/legal';
 
 const METHODS: { id: PaymentMethod; label: string; hint: string; icon: typeof CreditCard }[] = [
   { id: 'tarjeta', label: 'Tarjeta de crédito o débito', hint: 'Visa, Mastercard, Amex', icon: CreditCard },
@@ -18,6 +19,10 @@ const METHODS: { id: PaymentMethod; label: string; hint: string; icon: typeof Cr
 ];
 
 const BANKS = ['Bancolombia', 'Davivienda', 'BBVA', 'Banco de Bogotá', 'Nequi'];
+
+/** Finalidad específica que el cliente autoriza al confirmar el pedido. */
+const ORDER_PURPOSE =
+  'Gestionar este pedido: procesar el pago, coordinar la recogida con el establecimiento y conservar el soporte de la transacción.';
 
 export default function Checkout() {
   const [params] = useSearchParams();
@@ -30,6 +35,9 @@ export default function Checkout() {
   const [card, setCard] = useState({ number: '4242 4242 4242 4242', name: 'Sofía Herrera', exp: '12/28', cvv: '123' });
   const [bank, setBank] = useState(BANKS[0]);
   const [processing, setProcessing] = useState(false);
+  // Autorización puntual para este pedido: se guarda con la orden como prueba.
+  const [dataOk, setDataOk] = useState(false);
+  const [dataError, setDataError] = useState(false);
 
   const lines = cart
     .map((line) => ({ line, product: products.find((p) => p.id === line.productId) }))
@@ -53,6 +61,10 @@ export default function Checkout() {
   }
 
   const confirm = () => {
+    if (!dataOk) {
+      setDataError(true);
+      return;
+    }
     if (!user) {
       const res = login('cliente1@reverde.com', DEMO_PASSWORD);
       if (!res.ok) return;
@@ -61,7 +73,11 @@ export default function Checkout() {
     setProcessing(true);
     // Simulación de pasarela de pago: no hay proveedor real conectado.
     setTimeout(() => {
-      const order = checkout(mode, method);
+      const order = checkout(mode, method, {
+        version: LEGAL_VERSION,
+        acceptedAt: new Date().toISOString(),
+        purpose: ORDER_PURPOSE,
+      });
       setProcessing(false);
       if (order) navigate(`/tienda/confirmacion/${order.id}`);
     }, 1200);
@@ -248,11 +264,36 @@ export default function Checkout() {
               <span className="text-[24px] font-extrabold tracking-tight text-brand-700">{cop(subtotal)}</span>
             </div>
 
+            {/* Autorización de tratamiento de datos para este pedido */}
+            <div className="mt-4 rounded-2xl border border-black/5 bg-canvas p-3.5">
+              <Checkbox
+                required
+                checked={dataOk}
+                onChange={(v) => { setDataOk(v); setDataError(false); }}
+                label={
+                  <>
+                    Autorizo a {RESPONSABLE.name} a tratar mis datos personales para gestionar este pedido y a
+                    compartir con el establecimiento los datos necesarios para la entrega, conforme a la{' '}
+                    <Link to="/legal/privacidad" target="_blank" className="font-semibold text-brand-700 hover:underline">
+                      Política de tratamiento de datos
+                    </Link>
+                    .
+                  </>
+                }
+                hint={ORDER_PURPOSE}
+              />
+              {dataError && (
+                <p className="mt-2.5 rounded-xl bg-[#FCEDEC] px-3 py-2 text-[12.5px] font-medium text-[#B4453D]">
+                  Necesitamos tu autorización para procesar el pedido.
+                </p>
+              )}
+            </div>
+
             <Button
               block
               size="lg"
-              className="mt-4"
-              disabled={processing}
+              className="mt-3"
+              disabled={processing || !dataOk}
               icon={processing ? undefined : <ShieldCheck className="h-4 w-4" />}
               onClick={confirm}
             >

@@ -9,6 +9,7 @@ import { Avatar, Card, EmptyState, KpiCard, ProductThumb, SectionTitle } from '.
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Toggle } from '../../components/ui/Field';
+import { DataRightsCard } from '../../components/legal/DataRightsCard';
 
 export default function Profile() {
   const { user, orders, logout, resetDemo, toast } = useApp();
@@ -144,6 +145,9 @@ export default function Profile() {
           <Toggle checked={notify} onChange={setNotify} label="Avisarme cuando haya productos cerca" />
           <Toggle checked={nearbyOnly} onChange={setNearbyOnly} label="Mostrar solo establecimientos a menos de 2 km" />
         </div>
+        <p className="mt-3 text-[12.5px] leading-relaxed text-ink-faint">
+          Las notificaciones comerciales se controlan en «Privacidad y datos personales», más abajo.
+        </p>
         <div className="mt-5 flex flex-wrap gap-2 border-t border-black/5 pt-4">
           <Button
             variant="ghost"
@@ -158,6 +162,9 @@ export default function Profile() {
           </Button>
         </div>
       </Card>
+
+      {/* Habeas data */}
+      <DataRightsCard />
     </div>
   );
 }

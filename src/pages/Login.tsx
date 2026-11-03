@@ -189,6 +189,22 @@ export default function Login() {
             <Button type="submit" block size="lg" icon={<LogIn className="h-4 w-4" />}>
               Iniciar sesión
             </Button>
+
+            <p className="text-[11.5px] leading-relaxed text-ink-faint">
+              Al iniciar sesión confirmas que aceptas los{' '}
+              <Link to="/legal/terminos" className="font-semibold text-brand-700 hover:underline">
+                Términos y condiciones
+              </Link>{' '}
+              y que autorizaste el tratamiento de tus datos personales conforme a la{' '}
+              <Link to="/legal/privacidad" className="font-semibold text-brand-700 hover:underline">
+                Política de tratamiento de datos
+              </Link>{' '}
+              (Ley 1581 de 2012). Puedes{' '}
+              <Link to="/legal/habeas-data" className="font-semibold text-brand-700 hover:underline">
+                revisar o revocar tu autorización
+              </Link>{' '}
+              cuando quieras.
+            </p>
           </form>
 
           {/* Cuentas demo */}

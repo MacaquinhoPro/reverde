@@ -6,6 +6,7 @@ import {
   Leaf,
   LineChart,
   MapPin,
+  ShieldCheck,
   ShoppingBag,
   Sparkles,
   Store,
@@ -301,9 +302,18 @@ export default function Landing() {
               Prototipo académico · Bogotá, Colombia · {new Date().getFullYear()}
             </p>
           </div>
-          <div className="flex items-center gap-4 text-[13px] text-ink-soft">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[13px] text-ink-soft sm:justify-end">
             <Link to="/tienda/mapa" className="inline-flex items-center gap-1.5 hover:text-brand-700">
               <MapPin className="h-3.5 w-3.5" /> Reverde cerca de ti
+            </Link>
+            <Link to="/legal/terminos" className="hover:text-brand-700">
+              Términos y condiciones
+            </Link>
+            <Link to="/legal/privacidad" className="inline-flex items-center gap-1.5 hover:text-brand-700">
+              <ShieldCheck className="h-3.5 w-3.5" /> Tratamiento de datos
+            </Link>
+            <Link to="/legal/habeas-data" className="hover:text-brand-700">
+              Habeas data
             </Link>
             <Link to="/login" className="inline-flex items-center gap-1.5 hover:text-brand-700">
               Ingresar

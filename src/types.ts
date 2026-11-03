@@ -139,6 +139,16 @@ export interface OrderItem {
   weightKg: number;
 }
 
+/** Prueba de la autorización de datos otorgada para un pedido concreto. */
+export interface OrderConsent {
+  /** Versión del paquete legal aceptado. */
+  version: string;
+  /** Fecha y hora de la autorización (ISO 8601). */
+  acceptedAt: string;
+  /** Finalidad específica autorizada al confirmar el pedido. */
+  purpose: string;
+}
+
 export interface Order {
   id: string;
   code: string;
@@ -154,6 +164,8 @@ export interface Order {
   establishmentIds: string[];
   status: 'confirmado' | 'reservado' | 'entregado';
   pickupWindow: string;
+  /** Autorización de tratamiento de datos tomada al confirmar este pedido. */
+  consent?: OrderConsent;
 }
 
 export interface Sale {
