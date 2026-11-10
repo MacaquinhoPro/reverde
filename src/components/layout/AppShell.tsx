@@ -1,12 +1,13 @@
 import { useState, type ReactNode } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, LogOut, RotateCcw, Settings } from 'lucide-react';
+import { Bell, LifeBuoy, LogOut, RotateCcw, Settings } from 'lucide-react';
 import { Logo } from '../Logo';
 import { Avatar } from '../ui/Primitives';
 import { IconButton } from '../ui/Button';
 import { Drawer } from '../ui/Modal';
 import { Toggle } from '../ui/Field';
 import { useApp } from '../../store/AppContext';
+import { useReport } from '../../store/ReportContext';
 import { byEstablishment } from '../../data/establishments';
 import { cx } from '../../lib/format';
 
@@ -30,6 +31,7 @@ export function AppShell({
   alertsCount?: number;
 }) {
   const { user, logout, resetDemo, toast } = useApp();
+  const report = useReport();
   const [profileOpen, setProfileOpen] = useState(false);
   const [emailAlerts, setEmailAlerts] = useState(true);
   const [autoPublish, setAutoPublish] = useState(false);
@@ -42,7 +44,7 @@ export function AppShell({
   const alertsRoute = nav.find((n) => n.label.includes('Alertas'))?.to;
 
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="min-h-app bg-canvas">
       {/* ── Sidebar (escritorio) ─────────────────────────────────────── */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[248px] flex-col border-r border-black/5 bg-white lg:flex">
         <div className="px-6 pb-5 pt-6">
@@ -98,8 +100,8 @@ export function AppShell({
       </aside>
 
       {/* ── Topbar ───────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-30 border-b border-black/5 bg-canvas/85 backdrop-blur-xl lg:pl-[248px]">
-        <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
+      <header className="safe-top sticky top-0 z-30 border-b border-black/5 bg-canvas/85 backdrop-blur-xl lg:pl-[248px]">
+        <div className="safe-x flex h-16 items-center gap-2 px-4 sm:px-6 lg:px-8">
           <div className="lg:hidden">
             <Logo size="sm" />
           </div>
@@ -107,6 +109,9 @@ export function AppShell({
             {current?.label ?? title}
           </h1>
           <div className="flex-1" />
+          <IconButton label="Reportar un problema" onClick={report.open}>
+            <LifeBuoy className="h-[18px] w-[18px]" />
+          </IconButton>
           {alertsRoute && (
             <NavLink to={alertsRoute} className="relative">
               <IconButton label="Alertas">
@@ -119,27 +124,31 @@ export function AppShell({
               </IconButton>
             </NavLink>
           )}
-          <button onClick={() => setProfileOpen(true)} className="lg:hidden">
+          <button
+            onClick={() => setProfileOpen(true)}
+            aria-label="Perfil y configuración"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-xl active:scale-95 lg:hidden"
+          >
             <Avatar name={user?.name ?? 'R'} hue={user?.avatarHue} size="sm" />
           </button>
         </div>
       </header>
 
       {/* ── Contenido ────────────────────────────────────────────────── */}
-      <main className="pb-24 lg:pb-12 lg:pl-[248px]">
-        <div className="mx-auto max-w-[1180px] px-4 py-5 sm:px-6 sm:py-7 lg:px-8">{children}</div>
+      <main className="pb-nav-safe lg:pb-12 lg:pl-[248px]">
+        <div className="safe-x mx-auto max-w-[1180px] px-4 py-5 sm:px-6 sm:py-7 lg:px-8">{children}</div>
       </main>
 
       {/* ── Navegación inferior (móvil) ──────────────────────────────── */}
       <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-black/5 bg-white/95 backdrop-blur-xl lg:hidden">
-        <div className="mx-auto flex max-w-lg items-stretch">
+        <div className="safe-x mx-auto flex max-w-lg items-stretch">
           {mobileNav.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
                 cx(
-                  'relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[10.5px] font-semibold transition-colors',
+                  'relative flex min-h-nav-mobile flex-1 flex-col items-center justify-center gap-1 py-2 text-[10.5px] font-semibold leading-tight transition-colors',
                   isActive ? 'text-brand-700' : 'text-ink-faint',
                 )
               }
@@ -189,6 +198,15 @@ export function AppShell({
         </div>
 
         <div className="mt-4 space-y-2">
+          <button
+            onClick={() => {
+              setProfileOpen(false);
+              report.open();
+            }}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-medium text-ink-soft transition-colors hover:bg-brand-50 hover:text-brand-700"
+          >
+            <LifeBuoy className="h-4 w-4" /> Reportar un problema
+          </button>
           <button
             onClick={() => {
               resetDemo();

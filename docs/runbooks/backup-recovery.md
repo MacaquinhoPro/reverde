@@ -76,11 +76,24 @@ Formato del nombre: `<base>-<AAAAMMDD-HHMMSS>.dump`.
 
 ---
 
-## 3 · Programar el respaldo · pendiente
+## 3 · Programar el respaldo
 
-`TODO:` **nada está programado todavía.** Depende de dónde viva la base
-(decisión P1 de [`despliegue.md`](./despliegue.md)). Las tres opciones, en orden
-de preferencia:
+**Ya hay una programación activa**, a la espera de que exista base de
+producción: [`.github/workflows/backup.yml`](../../.github/workflows/backup.yml)
+corre todos los días a las 07:00 UTC (02:00 en Bogotá), respalda usando el
+secreto `DATABASE_URL` y guarda el volcado como artefacto privado con 14 días
+de caducidad.
+
+Mientras ese secreto no exista, el workflow **no falla**: avisa de que no hay
+nada que respaldar y termina en verde. Un workflow que falla todos los días se
+acaba ignorando, y uno ignorado no protege nada. El día que se aprovisione la
+base (decisión **P-1**) basta con crear el secreto — sin tocar el archivo.
+
+> ⚠️ El artefacto de GitHub es un destino **provisional**: sirve para no estar
+> sin respaldo, pero sigue pendiente el almacenamiento remoto cifrado con
+> acceso restringido (**B3**) antes de operar con datos reales.
+
+Las tres opciones de fondo, en orden de preferencia:
 
 ### Opción A · Respaldos del proveedor gestionado (recomendada)
 
@@ -178,6 +191,24 @@ las variables de entorno y hay que guardarla aparte, en el gestor de secretos.
 
 **Obligatoria antes de operar con datos reales, y después una vez por trimestre.**
 
+### Automática · `npm run db:verify-backup`
+
+```bash
+npm run db:up && npm run db:deploy && npm run db:seed   # si la base está vacía
+npm run db:verify-backup
+```
+
+Respalda, **borra cuatro tablas de verdad**, restaura y compara el conteo de
+las ocho tablas con datos. Si una sola cifra no vuelve, sale con error. Corre
+en la integración continua con cada cambio (trabajo `respaldo` de
+[`ci.yml`](../../.github/workflows/ci.yml)), así que el respaldo no puede
+romperse en silencio: lo detecta el siguiente commit, no el siguiente desastre.
+
+Es destructiva por diseño y se niega a correr contra cualquier base que no sea
+local o de pruebas.
+
+### Manual · la completa, con la API encima
+
 Procedimiento (30 min, sin tocar producción):
 
 1. `npm run db:backup` contra la base de origen.
@@ -201,7 +232,30 @@ Procedimiento (30 min, sin tocar producción):
 
 | Fecha | Quién | Respaldo usado | Destino | Tiempo (RTO real) | Resultado | Notas |
 |---|---|---|---|---|---|---|
-| — | | | | | ⬜ **nunca se ha probado** | Bloqueado: no hay base de producción, y en esta máquina no hay Docker ni `pg_dump` |
+| 10 nov 2026 | Andrés (con Claude Code) | `reverde_dev-20261110-135750.dump` · 132 KB · 28 tablas | `reverde_dev` en Docker local | **1 s** | ✅ **íntegra** | Primera restauración real. Se borraron 716 de 808 filas (`Sale`, `ExpirationAlert`, `Recommendation`, `PromoOutcome`) y volvieron las 8 tablas con el mismo conteo exacto. Destapó dos fallos que impedían que el sistema funcionara (abajo) |
+| 10 nov 2026 | `npm run db:verify-backup` | generado en la corrida | `reverde_dev` en Docker local | **1 s** | ✅ **íntegra** | Ya automatizada: 808 filas recuperadas |
+
+> El RTO medido (1 s) es el de una base de demostración de 132 KB. **No
+> predice el de producción**: con datos reales habrá que volver a medirlo y
+> actualizar el RTO declarado de 1 h.
+
+#### Dos fallos que este ejercicio destapó
+
+Los scripts estaban escritos pero **nunca se habían ejecutado**, y ninguno de
+los dos funcionaba:
+
+1. **`db-backup.sh` abortaba antes de respaldar nada.** La línea
+   `echo "→ Respaldando «$DB_NAME» en $OUT"` pega la variable a un carácter
+   multibyte (`»`); según el locale, bash se lo traga como parte del nombre de
+   la variable y, con `set -u`, muere con `DB_NAME»: unbound variable`.
+   Corregido poniendo llaves: `${DB_NAME}`.
+2. **`db-restore.sh` se negaba siempre a restaurar.** El respaldo guarda en el
+   `.sha256` solo el hash, pero la verificación usaba `shasum -c`, que exige el
+   formato `hash  archivo`. Nunca coincidía, así que toda restauración moría en
+   «La suma de verificación NO coincide». Ahora se recalcula y se comparan las
+   cadenas, lo que además permite mover el volcado de carpeta.
+
+Son el ejemplo exacto de por qué un script sin probar no es un respaldo.
 
 ---
 
@@ -256,8 +310,8 @@ Las dos últimas filas son la razón de ser de este documento.
 
 | # | Pendiente | Impacto |
 |---|---|---|
-| B1 | **Nunca se ha probado una restauración** | No se sabe si los respaldos sirven |
-| B2 | Nada está programado | Depende de P1 (dónde vive la base) |
+| ~~B1~~ | ~~Nunca se ha probado una restauración~~ | ✅ **Cerrado** el 10 nov 2026: probada, registrada arriba y automatizada en la CI (`npm run db:verify-backup`) |
+| ~~B2~~ | ~~Nada está programado~~ | ✅ **Cerrado**: `backup.yml` corre a diario; queda inerte hasta que exista el secreto `DATABASE_URL` (P-1) |
 | B3 | `TODO:` destino remoto cifrado para los volcados | Un respaldo junto a la base no protege de perder el servidor |
 | B4 | `TODO:` documentar la custodia de `ENCRYPTION_KEY` | Perderla hace inútil el respaldo |
 | B5 | Retención de 24 meses declarada pero no implementada | Incumplimiento de lo que promete la propia política |

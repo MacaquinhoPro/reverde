@@ -75,7 +75,7 @@ export default function Impact() {
       </div>
 
       {/* Comparaciones */}
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Card className="flex items-start gap-3.5 p-4 sm:p-5">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#EAF6EF] text-risk-low">
             <TrendingUp className="h-5 w-5" />
@@ -105,7 +105,7 @@ export default function Impact() {
       </div>
 
       {/* Gráficas */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <ChartCard title="Desperdicio evitado por semana" subtitle="Kilogramos de alimento rescatado">
           <AreaTrend data={series} dataKey="wasteAvoidedKg" formatter={(v) => kg(v)} />
         </ChartCard>
@@ -121,7 +121,7 @@ export default function Impact() {
       </div>
 
       {/* Impacto ambiental + canal */}
-      <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <Card className="p-4 sm:p-5">
           <SectionTitle title="Impacto ambiental estimado" subtitle={`Equivalencias de ${kg(totals.wasteAvoidedKg)} de alimento rescatado`} />
           <div className="mt-4 grid grid-cols-2 gap-3">

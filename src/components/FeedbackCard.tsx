@@ -1,7 +1,11 @@
 import { Bug, ExternalLink, Lightbulb, MessageSquare } from 'lucide-react';
 import { Card, SectionTitle } from './ui/Primitives';
+import { Button } from './ui/Button';
 import { RESPONSABLE } from '../data/legal';
 import { feedbackUrl } from '../lib/feedback';
+import { KIND_LABEL, listReports } from '../lib/reports';
+import { useReport } from '../store/ReportContext';
+import { formatDateShort } from '../lib/format';
 
 /**
  * Canal de reporte dentro de la aplicación.
@@ -14,6 +18,9 @@ import { feedbackUrl } from '../lib/feedback';
  * que se abre podría manipular la nuestra.
  */
 export function FeedbackCard() {
+  const report = useReport();
+  const previos = listReports().slice(0, 3);
+
   return (
     <Card className="p-4 sm:p-5">
       <SectionTitle
@@ -28,27 +35,39 @@ export function FeedbackCard() {
       </p>
 
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-        <a
-          href={feedbackUrl('bug')}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-100 px-5 text-sm font-semibold text-brand-700 transition-all duration-200 hover:bg-brand-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-200"
-        >
-          <Bug className="h-4 w-4" aria-hidden="true" />
-          Reportar un error
-          <ExternalLink className="h-3.5 w-3.5 opacity-60" aria-hidden="true" />
-        </a>
+        <Button block onClick={report.open} icon={<Bug className="h-4 w-4" aria-hidden="true" />}>
+          Reportar un problema
+        </Button>
         <a
           href={feedbackUrl('idea')}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-black/10 bg-white px-5 text-sm font-semibold text-ink transition-all duration-200 hover:border-brand-300 hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-200"
+          className="inline-flex min-h-field flex-1 items-center justify-center gap-2 rounded-xl border border-black/10 bg-white px-5 text-sm font-semibold text-ink transition-all duration-200 hover:border-brand-300 hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-200"
         >
           <Lightbulb className="h-4 w-4" aria-hidden="true" />
-          Proponer una mejora
+          Abrir un issue en GitHub
           <ExternalLink className="h-3.5 w-3.5 opacity-60" aria-hidden="true" />
         </a>
       </div>
+
+      {previos.length > 0 && (
+        <div className="mt-4 border-t border-black/5 pt-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-soft">
+            Tus reportes
+          </p>
+          <ul className="mt-2 space-y-1.5">
+            {previos.map((r) => (
+              <li key={r.id} className="flex items-center gap-3 text-[12.5px]">
+                <span className="rounded-md bg-brand-50 px-2 py-0.5 font-bold text-brand-700">
+                  {r.code}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-ink-soft">{KIND_LABEL[r.kind]}</span>
+                <span className="shrink-0 text-ink-soft">{formatDateShort(r.createdAt)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <p className="mt-4 flex items-start gap-2 border-t border-black/5 pt-4 text-[12.5px] leading-relaxed text-ink-faint">
         <MessageSquare className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />

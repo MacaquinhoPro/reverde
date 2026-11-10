@@ -124,6 +124,10 @@ tokens semánticos:
 | `sidebar` | `w-sidebar` | 15 rem | Ancho de la barra lateral |
 | `nav-mobile` | `h-nav-mobile` | 4,25 rem | Alto de la navegación inferior |
 | `field` | `min-h-field` | 2,75 rem (44 px) | **Mínimo táctil**: ningún control interactivo debe ser menor |
+| `safe-top` | `pt-safe-top` · `.safe-top` | `env(safe-area-inset-top)` | Isla dinámica y barra de estado |
+| `safe-bottom` | `pb-safe-bottom` · `.safe-bottom` | `env(safe-area-inset-bottom)` | Indicador de inicio del iPhone |
+| `safe-left` / `safe-right` | `.safe-x` | `env(safe-area-inset-*)` | Muesca lateral en horizontal |
+| `nav-safe` | `pb-nav-safe` | `nav-mobile + safe-bottom + 0,75 rem` | Espacio que el contenido deja sobre la barra inferior |
 
 ### Radios
 
@@ -144,6 +148,27 @@ grandes) · `rounded-full` (insignias y chips).
 `sm` 640 · **`md` 768 — el corte real del producto: debajo es la experiencia
 móvil, encima la de escritorio** · `lg` 1024 · `xl` 1280.
 
+### Móvil primero
+
+El producto se usa desde el teléfono —la tienda casi en exclusiva—, así que
+estas reglas son del sistema, no de cada pantalla. Las tres primeras están
+verificadas por pruebas de QA en los tres perfiles móviles
+([`tests/qa/resilience.spec.ts`](../../tests/qa/resilience.spec.ts)).
+
+| Regla | Por qué | Cómo se cumple |
+|---|---|---|
+| **Ningún control por debajo de 44 px** en móvil | Guía de interfaz de Apple; por debajo se falla el toque | `min-h-field` en botones, chips, segmentados e interruptores; los iconos van en caja de 44 y se compactan desde `sm` |
+| **Los campos miden 16 px de letra** en móvil | Por debajo, Safari en iPhone hace zoom al enfocar y descuadra la página | `.input-base` usa `text-base` y vuelve a `text-sm` desde `sm` |
+| **Nada desborda a lo ancho** | Un scroll horizontal accidental rompe la lectura | Toda pista de grid lleva `minmax(0,…)`; los carriles usan `.rail`, que sí desborda a propósito |
+| **Zonas seguras** | En un iPhone el contenido quedaría bajo la isla dinámica o el indicador de inicio | `.safe-top`, `.safe-x`, `.safe-bottom` en cabeceras, barras y hojas; el contenido reserva `pb-nav-safe` |
+| **Alto de ventana con `dvh`** | `100vh` en iOS mide con la barra del navegador retraída y corta el final | `.min-h-app` (`100dvh`, con `100vh` de respaldo) |
+| **Carriles horizontales con el pulgar** | Los filtros y las tarjetas se recorren deslizando | `.rail`: inercia, imán al soltar y extremos alineados con el margen |
+| **Se respeta «reducir movimiento»** | Es un ajuste de accesibilidad frecuente en iOS | `@media (prefers-reduced-motion: reduce)` apaga animaciones y transiciones |
+| **Sin zoom por pellizco ni por doble toque** | En el mapa, pellizcar alejaba la aplicación entera en vez de mover el mapa | Tres capas: la etiqueta `viewport` (Android), `touch-action: pan-x pan-y` (Chrome, doble toque) y [`src/lib/viewport.ts`](../../src/lib/viewport.ts) (los `gesture*` de Safari, que ignora las otras dos) |
+
+Para probar desde un teléfono real en la misma red: `npm run dev:movil` y abrir
+en el teléfono la dirección `Network` que imprime Vite.
+
 ---
 
 ## 4 · Movimiento
@@ -161,9 +186,10 @@ Animaciones disponibles: `animate-fade-up` · `animate-fade-in` ·
 `animate-scale-in` (modales) · `animate-slide-up` (hojas inferiores) ·
 `animate-pulse-ring` (alerta de riesgo alto).
 
-`TODO:` respetar `prefers-reduced-motion`. Hoy las animaciones no se desactivan
-para quien lo haya pedido en su sistema — es un hallazgo de accesibilidad
-pendiente.
+**`prefers-reduced-motion` se respeta** (`src/index.css`): si la persona pidió
+reducir el movimiento en su sistema —en iOS, Ajustes › Accesibilidad ›
+Movimiento— ninguna animación ni transición se ejecuta. Los cambios de estado
+siguen ocurriendo, pero sin desplazamientos ni rebotes.
 
 ---
 
@@ -278,7 +304,7 @@ segunda oportunidad.
 | # | Pendiente | Impacto |
 |---|---|---|
 | U1 | `TODO:` auditoría de contraste con axe o Lighthouse | Accesibilidad: la conformidad AA está afirmada, no medida |
-| U2 | `TODO:` soporte de `prefers-reduced-motion` | Accesibilidad |
+| ~~U2~~ | ~~`prefers-reduced-motion`~~ | — | ✅ **Cerrado**: bloque `@media (prefers-reduced-motion: reduce)` en `src/index.css` |
 | U3 | Cerrar el hallazgo H-2 (campos sin `label`) usando `Field` en todas las pantallas | Accesibilidad |
 | U4 | `TODO:` ¿vale la pena un Storybook? Hoy los componentes solo se ven dentro de la app | Velocidad de diseño |
 | U5 | Migrar las pantallas existentes a los tokens tipográficos (`text-body`…) | Consistencia |

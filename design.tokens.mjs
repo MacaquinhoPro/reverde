@@ -69,6 +69,24 @@ export const spacing = {
   sidebar: '15rem', // ancho de la barra lateral del panel
   'nav-mobile': '4.25rem', // alto de la navegación inferior
   field: '2.75rem', // alto mínimo de control táctil (≥ 44 px)
+
+  /**
+   * Zonas seguras del dispositivo. En un iPhone el navegador reserva espacio
+   * para la isla dinámica arriba y para el indicador de inicio abajo; sin esto
+   * el contenido queda debajo de ellos. Requieren `viewport-fit=cover` en
+   * `index.html`, que ya está puesto. En un equipo sin muescas valen 0.
+   */
+  'safe-top': 'env(safe-area-inset-top, 0px)',
+  'safe-bottom': 'env(safe-area-inset-bottom, 0px)',
+  'safe-left': 'env(safe-area-inset-left, 0px)',
+  'safe-right': 'env(safe-area-inset-right, 0px)',
+
+  /**
+   * Espacio que el contenido debe dejar libre al final de la página para no
+   * quedar tapado por la navegación inferior fija: su alto, más el indicador
+   * de inicio, más un respiro.
+   */
+  'nav-safe': 'calc(4.25rem + env(safe-area-inset-bottom, 0px) + 0.75rem)',
 };
 
 export const borderRadius = { xl: '14px', '2xl': '20px', '3xl': '28px' };

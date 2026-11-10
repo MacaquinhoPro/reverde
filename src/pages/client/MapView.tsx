@@ -55,7 +55,7 @@ export default function MapView() {
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <SimulatedMap
           establishments={visible}
           selectedId={selected}

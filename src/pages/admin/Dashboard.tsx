@@ -119,7 +119,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Gráficas */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <ChartCard title="Desperdicio evitado por semana" subtitle="Kilogramos rescatados en las últimas 8 semanas">
           <AreaTrend data={series} dataKey="wasteAvoidedKg" formatter={(v) => kg(v)} />
         </ChartCard>
@@ -135,13 +135,13 @@ export default function AdminDashboard() {
       </div>
 
       {/* Priorización */}
-      <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         <Card className="p-4 sm:p-5">
           <SectionTitle
             title="Prioriza hoy"
             subtitle="Productos con mayor riesgo de convertirse en desperdicio"
             action={
-              <Link to="/app/alertas" className="inline-flex items-center gap-1 text-[13px] font-semibold text-brand-700 hover:underline">
+              <Link to="/app/alertas" className="inline-flex items-center gap-1 py-3 -my-3 text-[13px] font-semibold text-brand-700 hover:underline">
                 Ver todas <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             }

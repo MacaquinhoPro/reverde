@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Compass, Home, MapPin, ShoppingBag, User } from 'lucide-react';
+import { Compass, Home, LifeBuoy, MapPin, ShoppingBag, User } from 'lucide-react';
 import { Logo } from '../Logo';
 import { Avatar } from '../ui/Primitives';
 import { useApp } from '../../store/AppContext';
+import { useReport } from '../../store/ReportContext';
 import { cx } from '../../lib/format';
 
 const ITEMS = [
@@ -16,14 +17,19 @@ const ITEMS = [
 
 export function ClientShell({ children }: { children: ReactNode }) {
   const { user, cartCount } = useApp();
+  const report = useReport();
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="min-h-app bg-canvas">
       {/* ── Topbar ───────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 border-b border-black/5 bg-canvas/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-[1180px] items-center gap-6 px-4 sm:px-6">
-          <button onClick={() => navigate('/tienda')}>
+      <header className="safe-top sticky top-0 z-40 border-b border-black/5 bg-canvas/85 backdrop-blur-xl">
+        <div className="safe-x mx-auto flex h-16 max-w-[1180px] items-center gap-4 px-4 sm:gap-6 sm:px-6">
+          <button
+            onClick={() => navigate('/tienda')}
+            aria-label="Ir al inicio de la tienda"
+            className="-m-2 inline-flex min-h-11 items-center p-2 active:scale-95"
+          >
             <Logo size="sm" />
           </button>
 
@@ -46,6 +52,14 @@ export function ClientShell({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="flex flex-1 items-center justify-end gap-2 md:flex-none">
+            <button
+              type="button"
+              onClick={report.open}
+              aria-label="Reportar un problema"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-ink-soft transition-colors hover:bg-brand-50 hover:text-brand-700 active:scale-95 sm:h-10 sm:w-10"
+            >
+              <LifeBuoy className="h-[18px] w-[18px]" />
+            </button>
             <NavLink
               to="/tienda/carrito"
               className="relative hidden h-10 w-10 items-center justify-center rounded-xl text-ink-soft transition-colors hover:bg-brand-50 hover:text-brand-700 md:inline-flex"
@@ -57,18 +71,22 @@ export function ClientShell({ children }: { children: ReactNode }) {
                 </span>
               )}
             </NavLink>
-            <NavLink to="/tienda/perfil">
+            <NavLink
+              to="/tienda/perfil"
+              aria-label="Mi perfil"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-xl active:scale-95"
+            >
               <Avatar name={user?.name ?? 'Invitado'} hue={user?.avatarHue ?? 200} size="sm" />
             </NavLink>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1180px] px-4 pb-28 pt-4 sm:px-6 sm:pt-6 md:pb-14">{children}</main>
+      <main className="safe-x mx-auto max-w-[1180px] px-4 pb-nav-safe pt-4 sm:px-6 sm:pt-6 md:pb-14">{children}</main>
 
       {/* ── Navegación inferior (móvil) ──────────────────────────────── */}
       <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-black/5 bg-white/95 backdrop-blur-xl md:hidden">
-        <div className="mx-auto flex max-w-lg items-stretch">
+        <div className="safe-x mx-auto flex max-w-lg items-stretch">
           {ITEMS.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
@@ -76,7 +94,7 @@ export function ClientShell({ children }: { children: ReactNode }) {
               end={end}
               className={({ isActive }) =>
                 cx(
-                  'relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[10.5px] font-semibold transition-colors',
+                  'relative flex min-h-nav-mobile flex-1 flex-col items-center justify-center gap-1 py-2 text-[10.5px] font-semibold leading-tight transition-colors',
                   isActive ? 'text-brand-700' : 'text-ink-faint',
                 )
               }

@@ -71,7 +71,7 @@ export default function Sales() {
               { value: '90', label: '90 días' },
             ]}
           />
-          <Select value={channel} onChange={(e) => setChannel(e.target.value)} className="w-full py-2 text-[13px] lg:w-44">
+          <Select value={channel} onChange={(e) => setChannel(e.target.value)} className="w-full sm:py-2 sm:text-[13px] lg:w-44">
             <option value="todos">Todos los canales</option>
             <option value="marketplace">Marketplace</option>
             <option value="tienda">Tienda / donación</option>

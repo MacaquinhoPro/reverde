@@ -1,23 +1,10 @@
 import { Link } from 'react-router-dom';
-import {
-  ArrowRight,
-  Boxes,
-  ChevronRight,
-  Leaf,
-  LineChart,
-  MapPin,
-  ShieldCheck,
-  ShoppingBag,
-  Sparkles,
-  Store,
-  TrendingDown,
-  Utensils,
-  Wallet,
-} from 'lucide-react';
+import { ArrowRight, Boxes, ChevronRight, Leaf, LifeBuoy, LineChart, MapPin, ShieldCheck, ShoppingBag, Sparkles, Store, TrendingDown, Utensils, Wallet } from 'lucide-react';
 import { Logo, ReverdeMark } from '../components/Logo';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Primitives';
 import { cop } from '../lib/format';
+import { useReport } from '../store/ReportContext';
 
 const PILLARS = [
   {
@@ -64,8 +51,9 @@ const ROLES = [
 ];
 
 export default function Landing() {
+  const report = useReport();
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="min-h-app bg-canvas">
       {/* ── Nav ──────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 border-b border-black/5 bg-canvas/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
@@ -89,7 +77,7 @@ export default function Landing() {
         <div className="pointer-events-none absolute -right-40 -top-40 h-[520px] w-[520px] rounded-full bg-brand-100 blur-3xl opacity-60" />
         <div className="pointer-events-none absolute -left-32 top-40 h-96 w-96 rounded-full bg-brand-50 blur-3xl" />
         <div className="relative mx-auto max-w-6xl px-5 pb-16 pt-14 sm:px-8 sm:pb-24 sm:pt-20">
-          <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_.95fr]">
+          <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,.95fr)]">
             <div className="animate-fade-up">
               <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white px-3.5 py-1.5 text-[12.5px] font-semibold text-brand-700">
                 <Leaf className="h-3.5 w-3.5" />
@@ -283,7 +271,7 @@ export default function Landing() {
                   </span>
                   <h3 className="mt-4 text-[16px] font-bold text-ink">{r.title}</h3>
                   <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-soft">{r.body}</p>
-                  <span className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-brand-700">
+                  <span className="mt-4 inline-flex items-center gap-1 py-3 -my-3 text-[13px] font-semibold text-brand-700">
                     Entrar <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                   </span>
                 </Card>
@@ -315,7 +303,14 @@ export default function Landing() {
             <Link to="/legal/habeas-data" className="hover:text-brand-700">
               Habeas data
             </Link>
-            <Link to="/login" className="inline-flex items-center gap-1.5 hover:text-brand-700">
+            <button
+              type="button"
+              onClick={report.open}
+              className="inline-flex min-h-11 items-center gap-1.5 hover:text-brand-700"
+            >
+              <LifeBuoy className="h-3.5 w-3.5" /> Reportar un problema
+            </button>
+            <Link to="/login" className="inline-flex min-h-11 items-center gap-1.5 hover:text-brand-700">
               Ingresar
             </Link>
           </div>

@@ -59,16 +59,35 @@
     --nav-mobile: 4.25rem;
     --field: 2.75rem;
 
+    /* Zonas seguras del dispositivo (isla dinámica, indicador de inicio) */
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --nav-safe: calc(var(--nav-mobile) + var(--safe-bottom) + 0.75rem);
+
     /* Movimiento: una sola curva en toda la aplicación */
     --ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
     --duration-fast: 0.2s;
     --duration-base: 0.3s;
     --duration-slow: 0.45s;
   }
-  html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* iOS infla la tipografía al girar el teléfono si no se fija. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /* Deja pasar el desplazamiento en los dos ejes y nada más: sin zoom por
+       doble toque ni por pellizco. El resto lo hace src/lib/viewport.ts,
+       porque Safari de iPhone no obedece ni esto ni la etiqueta viewport. */
+    touch-action: pan-x pan-y;
+  }
   body {
     @apply bg-canvas text-ink font-sans antialiased;
     margin: 0;
+    /* Ningún layout debe desbordar a lo ancho: si lo hace, es un error que se
+       corrige en la pantalla, no ocultándolo aquí. Esto solo evita que el
+       rebote horizontal de iOS deje ver el fondo del navegador. */
+    overscroll-behavior-x: none;
   }
   * { scrollbar-width: thin; scrollbar-color: #C2E2CE transparent; }
   *::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -87,16 +106,76 @@
   .card-hover {
     @apply transition-all duration-300 hover:shadow-lift hover:-translate-y-0.5 hover:border-brand-200;
   }
+  /**
+   * Campos de formulario. El tamaño de letra en móvil es 16 px a propósito:
+   * por debajo de eso Safari en iPhone hace zoom al enfocar el campo y deja la
+   * página descuadrada. Desde `sm` vuelve a la escala de diseño (14 px).
+   */
   .input-base {
-    @apply w-full rounded-xl border border-black/10 bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint
-           transition-all duration-200 focus:border-brand-400 focus:ring-4 focus:ring-brand-100;
+    @apply w-full min-h-field rounded-xl border border-black/10 bg-white px-3.5 py-2.5 text-base text-ink
+           placeholder:text-ink-faint transition-all duration-200
+           focus:border-brand-400 focus:ring-4 focus:ring-brand-100 sm:min-h-0 sm:text-sm;
   }
   .label-base { @apply block text-[13px] font-medium text-ink-soft mb-1.5; }
+  /** Filtro en forma de píldora. En móvil cumple los 44 px de alto táctil. */
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-medium transition-all duration-200;
+    @apply inline-flex min-h-field items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium
+           transition-all duration-200 sm:min-h-0 sm:px-3;
   }
   .skeleton { @apply animate-pulse rounded-xl bg-brand-50; }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  /* Zonas seguras: la barra inferior y las cabeceras fijas las necesitan. */
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .safe-top { padding-top: env(safe-area-inset-top, 0px); }
+  .safe-x {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  /**
+   * Alto de la ventana que de verdad se ve. `100vh` en iOS mide con la barra
+   * del navegador retraída, así que el contenido queda cortado; `100dvh` sigue
+   * a la barra. El `vh` queda como respaldo para navegadores sin `dvh`.
+   */
+  .min-h-app { min-height: 100vh; min-height: 100dvh; }
+
+  /**
+   * Carril horizontal de filtros o tarjetas. Con arrastre por inercia, imán
+   * al soltar y los extremos alineados con el margen de la pantalla, que es
+   * como se navega con el pulgar.
+   */
+  .rail {
+    @apply -mx-4 flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-4 sm:mx-0 sm:px-0;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scroll-padding-left: 1rem;
+  }
+  .rail > * { @apply shrink-0 snap-start; }
+
+  /** Amplía el área de toque de un control pequeño sin cambiar su aspecto. */
+  .tap::after {
+    content: '';
+    position: absolute;
+    inset: 50% 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/**
+ * Accesibilidad: si la persona pidió reducir el movimiento en los ajustes del
+ * sistema —en iOS, Ajustes › Accesibilidad › Movimiento— no se le anima nada.
+ * Se respetan los cambios de estado, pero sin desplazamientos ni rebotes.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -66,7 +66,7 @@ export default function ProductDetail() {
         Volver
       </Button>
 
-      <div className="grid gap-6 lg:grid-cols-[1.05fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
         {/* Galería */}
         <div className="space-y-3">
           <ProductThumb emoji={product.emoji} image={product.image} photo={product.photo} alt={product.name} size="full" className="h-64 rounded-2xl text-8xl sm:h-80">

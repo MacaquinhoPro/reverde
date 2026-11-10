@@ -62,7 +62,7 @@ export function SimulatedMap({
           <button
             key={e.id}
             onClick={() => onSelect?.(e.id)}
-            className="group absolute -translate-x-1/2 -translate-y-full transition-transform duration-200 hover:z-20 hover:scale-110"
+            className="group absolute inline-flex min-h-field items-end -translate-x-1/2 -translate-y-full transition-transform duration-200 hover:z-20 hover:scale-110 sm:min-h-0"
             style={{ left: `${e.x}%`, top: `${e.y}%` }}
             aria-label={e.name}
           >

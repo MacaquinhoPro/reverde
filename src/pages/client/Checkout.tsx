@@ -91,7 +91,7 @@ export default function Checkout() {
 
       <SectionTitle title="Finalizar pedido" subtitle="Simulación de pago · no se procesa ningún cobro real." />
 
-      <div className="grid gap-5 lg:grid-cols-[1.35fr_1fr]">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
         <div className="space-y-4">
           {/* Modo */}
           <Card className="p-4 sm:p-5">

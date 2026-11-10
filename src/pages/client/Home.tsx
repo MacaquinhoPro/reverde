@@ -68,7 +68,7 @@ export default function ClientHome() {
       {/* Categorías */}
       <section>
         <SectionTitle title="Explora por categoría" />
-        <div className="no-scrollbar mt-4 flex gap-2.5 overflow-x-auto pb-1">
+        <div className="rail mt-4 pb-1">
           {CATEGORIES.map((c) => (
             <Link
               key={c}
@@ -91,7 +91,7 @@ export default function ClientHome() {
             title="Rescátalos hoy"
             subtitle="Vencen en menos de 48 horas y están en perfecto estado."
             action={
-              <Link to="/tienda/explorar?pronto=1" className="inline-flex items-center gap-1 text-[13px] font-semibold text-brand-700 hover:underline">
+              <Link to="/tienda/explorar?pronto=1" className="inline-flex items-center gap-1 py-3 -my-3 text-[13px] font-semibold text-brand-700 hover:underline">
                 Ver todos <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             }
@@ -117,7 +117,7 @@ export default function ClientHome() {
         <SectionTitle
           title="Los mejores descuentos"
           action={
-            <Link to="/tienda/explorar?orden=descuento" className="inline-flex items-center gap-1 text-[13px] font-semibold text-brand-700 hover:underline">
+            <Link to="/tienda/explorar?orden=descuento" className="inline-flex items-center gap-1 py-3 -my-3 text-[13px] font-semibold text-brand-700 hover:underline">
               Ver todos <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           }
@@ -130,7 +130,7 @@ export default function ClientHome() {
       {/* Establecimientos cercanos */}
       <section>
         <SectionTitle title="Establecimientos cerca de ti" action={
-          <Link to="/tienda/mapa" className="inline-flex items-center gap-1 text-[13px] font-semibold text-brand-700 hover:underline">
+          <Link to="/tienda/mapa" className="inline-flex items-center gap-1 py-3 -my-3 text-[13px] font-semibold text-brand-700 hover:underline">
             Ver mapa <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         } />

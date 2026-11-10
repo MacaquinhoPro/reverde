@@ -14,8 +14,13 @@ const VARIANTS: Record<Variant, string> = {
   light: 'bg-white/15 text-white hover:bg-white/25 backdrop-blur',
 };
 
+/**
+ * Alturas. En móvil ningún botón baja de 44 px (el token `field`), que es el
+ * objetivo táctil mínimo de la guía de interfaz de Apple; desde `sm` se usa la
+ * escala compacta de escritorio, donde se apunta con el ratón.
+ */
 const SIZES: Record<Size, string> = {
-  sm: 'h-9 px-3.5 text-[13px] gap-1.5 rounded-[10px]',
+  sm: 'min-h-field min-w-field px-3.5 text-[13px] gap-1.5 rounded-[10px] sm:min-h-0 sm:min-w-0 sm:h-9',
   md: 'h-11 px-5 text-sm gap-2 rounded-xl',
   lg: 'h-[52px] px-7 text-[15px] gap-2.5 rounded-2xl',
 };
@@ -75,7 +80,7 @@ export function IconButton({
       aria-label={label}
       title={label}
       className={cx(
-        'inline-flex h-10 w-10 items-center justify-center rounded-xl text-ink-soft transition-all duration-200',
+        'inline-flex h-11 w-11 items-center justify-center rounded-xl text-ink-soft transition-all duration-200 sm:h-10 sm:w-10',
         'hover:bg-brand-50 hover:text-brand-700 active:scale-95 focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:outline-none',
         className,
       )}

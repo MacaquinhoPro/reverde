@@ -21,7 +21,7 @@ const ICONS: Record<LegalSlug, typeof FileText> = {
 
 function Chrome({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="min-h-app bg-canvas">
       <header className="sticky top-0 z-30 border-b border-black/5 bg-canvas/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-5 sm:px-8">
           <Link to="/">

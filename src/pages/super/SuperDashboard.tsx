@@ -96,7 +96,7 @@ export default function SuperDashboard() {
           title="Ranking de establecimientos"
           subtitle="Dinero recuperado en los últimos 30 días"
           action={
-            <Link to="/admin/establecimientos" className="inline-flex items-center gap-1 text-[13px] font-semibold text-brand-700 hover:underline">
+            <Link to="/admin/establecimientos" className="inline-flex items-center gap-1 py-3 -my-3 text-[13px] font-semibold text-brand-700 hover:underline">
               Ver todos <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           }

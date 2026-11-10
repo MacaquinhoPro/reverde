@@ -166,7 +166,7 @@ export default function Marketplace() {
         </div>
 
         {/* Chips rápidos */}
-        <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto pb-1">
+        <div className="rail mt-2 pb-1">
           <button
             onClick={() => setExpiringSoon((v) => !v)}
             className={cx('chip shrink-0', expiringSoon ? 'bg-brand-700 text-white' : 'bg-white text-ink-soft ring-1 ring-black/5')}
@@ -196,7 +196,7 @@ export default function Marketplace() {
         </div>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[250px_1fr]">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[250px_minmax(0,1fr)]">
         {/* Filtros (escritorio) */}
         <aside className="hidden lg:block">
           <Card className="sticky top-32 p-4">

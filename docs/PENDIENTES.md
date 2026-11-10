@@ -22,15 +22,15 @@ desbloquea y en qué orden conviene hacerlo**.
 | Área | Renglones | 🔴 | 🟠 | 🟡 | ⚪ |
 |---|---|---|---|---|---|
 | Estrategia (validación de campo y negocio) | 10 | 1 | 4 | 0 | 5 |
-| Diseño y accesibilidad | 9 | 0 | 5 | 2 | 2 |
+| Diseño y accesibilidad | 9 | 0 | 4 | 3 | 2 |
 | Arquitectura (datos · API · seguridad) | 19 | 3 | 7 | 5 | 4 |
 | Desarrollo e integraciones | 7 | 1 | 3 | 1 | 2 |
-| Calidad (QA e interfaz · carga) | 12 | 2 | 6 | 3 | 1 |
-| Lanzamiento (CI/CD · analytics · respaldos) | 20 | 4 | 9 | 4 | 3 |
+| Calidad (QA e interfaz · carga) | 11 | 2 | 5 | 3 | 1 |
+| Lanzamiento (CI/CD · analytics · respaldos) | 18 | 2 | 9 | 4 | 3 |
 | Legal | 7 | 2 | 3 | 0 | 2 |
-| **Total** | **84** | **13** | **37** | **15** | **19** |
+| **Total** | **81** | **11** | **35** | **16** | **19** |
 
-> **Sobre el total.** Son 84 renglones, no 84 trabajos distintos: varios son el
+> **Sobre el total.** Son 81 renglones, no 84 trabajos distintos: varios son el
 > mismo problema visto desde dos documentos (por ejemplo la retención de 24
 > meses aparece como `D3`, `S6`, `B5` y `L-3` legal). Donde pasa, el renglón lo
 > dice con «**=**». Trabajos verdaderamente distintos: unos 70.
@@ -127,9 +127,10 @@ Hitos 6 y 7.
 | X2 | **Hacer la primera ronda de pruebas con usuarios** (5 administradores + 5 compradores; las 11 tareas A1–A6 y C1–C5 están escritas y la plantilla de registro está vacía) | 🟠 | X3 | ídem |
 | X3 | Reclutar participantes para esas pruebas | 🟠 | — | ídem |
 | U1 | Auditoría de contraste con axe-core o Lighthouse: **la conformidad AA está afirmada, no medida** | 🟠 | — | [`ui-kit.md`](./diseno/ui-kit.md) **=** `Q2` |
-| U2 | Soportar `prefers-reduced-motion` (verificado hoy: no aparece en ninguna parte del código) | 🟠 | — | ídem **=** `Q4` |
+| ~~U2~~ | ~~Soportar `prefers-reduced-motion`~~ | ✅ | — | **Cerrado**: `@media (prefers-reduced-motion: reduce)` en [`src/index.css`](../src/index.css) **=** `Q4` |
 | U3 | Cerrar **H-2**: `Field` renderiza `<label>` sin `htmlFor`, así que los lectores de pantalla anuncian los campos sin nombre | 🟠 | — | [`QA-PLAN.md`](./QA-PLAN.md) **=** `Q3` |
 | U4 | Decidir si vale la pena un Storybook | ⚪ | — | [`ui-kit.md`](./diseno/ui-kit.md) |
+| U7 | **El zoom por pellizco está desactivado a propósito**, lo que incumple WCAG 1.4.4 (ampliar al 200 %). Se pidió expresamente porque en el mapa el gesto alejaba la app entera. Revisar si conviene reactivarlo cuando el mapa maneje su propio zoom | 🟡 | — | [`src/lib/viewport.ts`](../src/lib/viewport.ts) |
 | U5 | Migrar las pantallas existentes a los tokens tipográficos (`text-body`…) | 🟡 | — | ídem |
 | U6 | Decidir si habrá tema oscuro (hoy la paleta es solo clara) | 🟡 | — | ídem |
 
@@ -200,7 +201,7 @@ Hitos 15 y 16.
 | Q1 | Confirmar `escritorio-firefox` en la CI: es el único de los 6 motores sin verificar | 🟠 | CI | [`qa/interfaz.md`](./qa/interfaz.md) |
 | Q2 | Auditoría con axe-core o Lighthouse (puntos 7.8 y 8.4 de la checklist) | 🟠 | — | **=** `U1` |
 | Q3 | Cerrar el hallazgo **H-2** (campos sin etiqueta) | 🟠 | — | **=** `U3` |
-| Q4 | Implementar `prefers-reduced-motion` | 🟠 | — | **=** `U2` |
+| ~~Q4~~ | ~~Implementar `prefers-reduced-motion`~~ | ✅ | — | **=** `U2` |
 | Q5 | **Recorrer la checklist manual completa** (70 comprobaciones en 9 bloques) y registrar la ronda: ninguna persona lo ha hecho todavía | 🟠 | — | [`qa/interfaz.md`](./qa/interfaz.md) |
 | Q6 | Probar en un teléfono físico, no solo en el emulador (teclado y rendimiento real) | 🟡 | — | ídem |
 | H-3 | Ordenar el marketplace recalcula el riesgo dentro del comparador (rendimiento, bajo) | 🟡 | — | [`QA-PLAN.md`](./QA-PLAN.md) |
@@ -253,8 +254,8 @@ Hito 21.
 
 | # | Pendiente | Sev. | Bloqueado por | Detalle |
 |---|---|---|---|---|
-| B1 | **Probar una restauración de punta a punta**: nunca se ha hecho, así que no se sabe si los respaldos sirven | 🔴 | Docker o **P-1** | [`runbooks/backup-recovery.md`](./runbooks/backup-recovery.md) |
-| B2 | Programar el respaldo (hay 3 opciones documentadas con recomendación; nada está activo) | 🔴 | **P-1** | ídem |
+| ~~B1~~ | ~~Probar una restauración de punta a punta~~ | ✅ | — | **Cerrado** el 10 nov 2026: 808 filas recuperadas en 1 s, registrado en [`backup-recovery.md`](./runbooks/backup-recovery.md) y automatizado (`npm run db:verify-backup`, trabajo `respaldo` de la CI) |
+| ~~B2~~ | ~~Programar el respaldo~~ | ✅ | — | **Cerrado**: [`backup.yml`](../.github/workflows/backup.yml) corre a diario a las 07:00 UTC; queda inerte y en verde hasta que exista el secreto `DATABASE_URL` |
 | B3 | Destino remoto **cifrado** para los volcados: un respaldo junto a la base no protege de perder el servidor | 🟠 | **P-1** | ídem |
 | B4 | Documentar dónde se custodia `ENCRYPTION_KEY`: perderla hace inútil el respaldo | 🟠 | — | ídem · `S5` |
 | B5 | Retención de 24 meses declarada y no implementada | 🟠 | — | **=** `D3` |
@@ -272,7 +273,7 @@ Hitos 22 y 23.
 | L-4 | Declarar los **encargados del tratamiento** (pasarela de pagos, proveedor de correo, analytics) en la política | 🟠 | **P-5** · `I2` | ídem |
 | L-5 | Evaluar si el registro ante el **RNBD** de la SIC es exigible | ⚪ | abogado | ídem |
 | L-6 | Consentimiento escrito para grabar las pruebas con usuarios | 🟠 | X2 | ídem |
-| L-7 | Confirmar que `MacaquinhoPro/reverde` es el repositorio definitivo (los enlaces del canal de reporte apuntan ahí) y llevar el canal también al panel del establecimiento, no solo al perfil del cliente | ⚪ | — | [`feedback.ts`](../src/lib/feedback.ts) |
+| L-7 | Confirmar que `MacaquinhoPro/reverde` es el repositorio definitivo (los enlaces a GitHub del canal apuntan ahí) | ⚪ | — | [`feedback.ts`](../src/lib/feedback.ts) · ~~la segunda mitad (llevar el canal al panel del establecimiento) quedó **cerrada**: el canal está ahora en la cabecera de los tres roles~~ |
 
 ---
 
@@ -316,6 +317,12 @@ Para que nadie lo reabra por error:
 | `S1` · CSP del frontend | ✅ **Cerrado** en [`vercel.json`](../vercel.json), verificado con 75 pruebas de QA sobre el build real (`npm run preview:headers`) |
 | `S11` · Cabeceras de seguridad del frontend | ✅ **Cerrado**: `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, HSTS con preload, `nosniff`, COOP |
 | `S4` · Exportación de datos personales | ✅ **Cerrado**: `GET /api/users/me/export` |
+| `U2` / `Q4` · `prefers-reduced-motion` | ✅ **Cerrado**: bloque dedicado en `src/index.css` |
+| Desbordamiento horizontal en móvil | ✅ **Cerrado**: `/app/inicio` (17 px) y `/admin/establecimientos` (9 px) ya no desbordan; lo vigila una prueba de QA en los tres perfiles móviles |
+| Zoom de iOS al enfocar un campo | ✅ **Cerrado**: los campos miden 16 px en móvil, con prueba que lo verifica |
+| Zoom por pellizco que encogía la app en el mapa | ✅ **Cerrado**: `src/lib/viewport.ts` + etiqueta `viewport` + `touch-action`, con 5 pruebas |
+| `B1` / `B2` · Respaldo probado y programado | ✅ **Cerrado**: restauración real registrada, verificación automática en la CI y workflow diario |
+| Canal de reporte para quien usa la app | ✅ **Cerrado**: formulario dentro de la aplicación, accesible desde la cabecera de los tres roles y desde la portada |
 | **H-1** · `null` en una lista de `localStorage` dejaba la app en blanco | ✅ **Corregido** el 9 de noviembre de 2026 |
 | Consentimiento en el registro | ✅ **Cerrado**: `POST /api/auth/register` exige `consent.accepted === true` y la versión del texto |
 | Redirección HTTP → HTTPS | ✅ La hace Vercel en su borde |

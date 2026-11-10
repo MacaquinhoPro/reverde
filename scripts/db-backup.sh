@@ -85,7 +85,7 @@ DB_NAME="$(printf '%s' "$DATABASE_URL" | sed -E 's#.*/([^/?]+).*#\1#')"
 OUT="$BACKUP_DIR/${DB_NAME}-${STAMP}.dump"
 
 mkdir -p "$BACKUP_DIR"
-echo "→ Respaldando «$DB_NAME» en $OUT"
+echo "→ Respaldando «${DB_NAME}» en $OUT"
 
 # --no-owner y --no-privileges: el volcado se puede restaurar en una base con
 # otro usuario (la gestionada de producción no usa el mismo rol que la local).

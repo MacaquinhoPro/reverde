@@ -25,7 +25,7 @@ function Detail({ product }: { product: Product }) {
         </Button>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[1.35fr_1fr]">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
         {/* Columna principal */}
         <div className="space-y-4">
           <Card className="p-4 sm:p-5">

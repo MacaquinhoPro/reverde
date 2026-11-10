@@ -156,15 +156,143 @@ test.describe('experiencia móvil', () => {
     await expect(textoVisible(page, 'Nivel de riesgo')).toBeVisible();
   });
 
+  /**
+   * Antes esta prueba solo recorría la tienda, y por eso no vio que
+   * `/app/inicio` se salía 17 px y `/admin/establecimientos` 9 px en un
+   * iPhone: una pista de grid sin `minmax(0,…)` crecía con su contenido.
+   * Ahora cubre los tres roles.
+   */
   test('no hay desbordamiento horizontal en las pantallas principales', async ({ page }) => {
-    await entrarComo(page, 'cliente');
-    for (const ruta of ['/tienda', '/tienda/explorar', '/tienda/carrito', '/tienda/perfil']) {
+    const sinDesborde = async (ruta: string) => {
       await page.goto(ruta);
-      const desborda = await page.evaluate(
-        () => document.documentElement.scrollWidth > window.innerWidth + 2,
+      await expect(page.locator('body')).toBeVisible();
+      const exceso = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth,
       );
-      expect(desborda, `${ruta} desborda horizontalmente`).toBe(false);
+      expect(exceso, `${ruta} desborda ${exceso} px a lo ancho`).toBeLessThanOrEqual(2);
+    };
+
+    for (const ruta of ['/', '/login', '/legal']) await sinDesborde(ruta);
+
+    await entrarComo(page, 'cliente');
+    for (const ruta of ['/tienda', '/tienda/explorar', '/tienda/mapa', '/tienda/carrito', '/tienda/perfil']) {
+      await sinDesborde(ruta);
     }
+
+    await entrarComo(page, 'supermercado');
+    for (const ruta of ['/app/inicio', '/app/inventario', '/app/alertas', '/app/marketplace', '/app/ventas', '/app/impacto']) {
+      await sinDesborde(ruta);
+    }
+
+    await entrarComo(page, 'superadmin');
+    for (const ruta of ['/admin/inicio', '/admin/establecimientos', '/admin/publicaciones']) {
+      await sinDesborde(ruta);
+    }
+  });
+
+  /**
+   * Safari en iPhone hace zoom sobre cualquier campo cuya letra sea menor de
+   * 16 px, y deja la página descuadrada después de escribir. La regla se
+   * aplica solo en móvil: desde `sm` los campos vuelven a 14 px.
+   */
+  test('ningún campo de formulario baja de 16 px', async ({ page }) => {
+    const campos = 'input:not([type=checkbox]):not([type=radio]):not([type=hidden]), select, textarea';
+    const revisar = async (ruta: string) => {
+      await page.goto(ruta);
+      await expect(page.locator('body')).toBeVisible();
+      const chicos = await page.evaluate((sel) => {
+        return [...document.querySelectorAll(sel)]
+          .filter((el) => (el as HTMLElement).offsetParent !== null)
+          .map((el) => ({
+            campo: `${el.tagName.toLowerCase()}.${String((el as HTMLElement).className).split(' ')[0]}`,
+            px: parseFloat(getComputedStyle(el).fontSize),
+          }))
+          .filter((c) => c.px < 16);
+      }, campos);
+      expect(chicos, `${ruta} tiene campos por debajo de 16 px`).toEqual([]);
+    };
+
+    await revisar('/login');
+    await entrarComo(page, 'cliente');
+    await revisar('/tienda/explorar');
+    await entrarComo(page, 'supermercado');
+    await revisar('/app/inventario');
+    await revisar('/app/ventas');
+  });
+
+  /**
+   * La navegación inferior es lo que más se toca en un teléfono: cada destino
+   * debe cumplir el objetivo táctil de 44 px de la guía de interfaz de Apple,
+   * que en el diseño es el token `field`.
+   */
+  test('la navegación inferior cumple el objetivo táctil de 44 px', async ({ page }) => {
+    for (const rol of ['cliente', 'supermercado'] as const) {
+      await entrarComo(page, rol);
+      const destinos = page.locator('nav.fixed a');
+      // `count()` no espera: hay que dejar que la barra se pinte primero.
+      await expect(destinos.first()).toBeVisible();
+      const total = await destinos.count();
+      expect(total, `${rol} no tiene barra inferior`).toBeGreaterThan(0);
+      for (let i = 0; i < total; i++) {
+        const caja = await destinos.nth(i).boundingBox();
+        expect(caja!.height, `destino ${i} de ${rol} mide ${caja!.height} px de alto`).toBeGreaterThanOrEqual(44);
+        expect(caja!.width, `destino ${i} de ${rol} mide ${caja!.width} px de ancho`).toBeGreaterThanOrEqual(44);
+      }
+    }
+  });
+});
+
+/**
+ * El canal de reporte tiene que estar al alcance de CUALQUIERA que use la
+ * aplicación, no solo de quien sepa buscarlo en el perfil del cliente. Antes
+ * de esto, quien administraba un establecimiento no tenía dónde reportar.
+ */
+test.describe('canal de reporte', () => {
+  const abrirDesdeLaCabecera = async (page: import('@playwright/test').Page) => {
+    await visible(page.getByRole('button', { name: 'Reportar un problema' })).first().click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    // Por rol y nombre: de paso comprueba que la etiqueta está asociada al
+    // campo, que es lo que falla en el resto de formularios (hallazgo H-2).
+    await expect(page.getByRole('textbox', { name: 'Cuéntanos qué pasó' })).toBeVisible();
+  };
+
+  for (const rol of ['cliente', 'supermercado', 'superadmin'] as const) {
+    test(`se abre desde la cabecera · ${rol}`, async ({ page }) => {
+      await entrarComo(page, rol);
+      await abrirDesdeLaCabecera(page);
+    });
+  }
+
+  test('se abre desde la portada, sin haber iniciado sesión', async ({ page }) => {
+    await page.goto('/');
+    await visible(page.getByRole('button', { name: /Reportar un problema/ })).first().click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+  });
+
+  test('un reporte se guarda y devuelve un código de seguimiento', async ({ page }) => {
+    await entrarComo(page, 'supermercado');
+    await abrirDesdeLaCabecera(page);
+
+    await page.getByRole('textbox', { name: 'Cuéntanos qué pasó' }).fill(
+      'Al tocar Publicar en un producto no pasa nada.',
+    );
+    await page.getByRole('button', { name: 'Enviar reporte' }).click();
+
+    // El código se le muestra a la persona…
+    await expect(visible(page.getByText(/^RP-[A-Z0-9]{5}$/))).toBeVisible();
+    // …y el reporte queda guardado, no se pierde al cerrar.
+    const guardados = await page.evaluate(() =>
+      JSON.parse(window.localStorage.getItem('reverde.v1.reports') ?? '[]'),
+    );
+    expect(guardados).toHaveLength(1);
+    expect(guardados[0].message).toContain('no pasa nada');
+  });
+
+  test('exige un mensaje con contenido antes de enviar', async ({ page }) => {
+    await entrarComo(page, 'cliente');
+    await abrirDesdeLaCabecera(page);
+    await page.getByRole('button', { name: 'Enviar reporte' }).click();
+    await expect(page.getByRole('alert')).toContainText('al menos diez caracteres');
   });
 });
 

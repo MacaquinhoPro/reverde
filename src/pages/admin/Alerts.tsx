@@ -46,7 +46,7 @@ export default function Alerts() {
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-[1.45fr_1fr]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
         <div className="space-y-3">
           {visible.length === 0 ? (
             <EmptyState
@@ -165,7 +165,7 @@ export default function Alerts() {
             </p>
             <Link
               to="/app/impacto"
-              className="mt-3 inline-flex items-center gap-1 text-[13px] font-semibold text-brand-700 hover:underline"
+              className="mt-3 inline-flex items-center gap-1 py-3 -my-3 text-[13px] font-semibold text-brand-700 hover:underline"
             >
               Ver impacto acumulado <ChevronRight className="h-3.5 w-3.5" />
             </Link>

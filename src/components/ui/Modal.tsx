@@ -16,17 +16,44 @@ interface Props {
 
 const SIZES = { sm: 'sm:max-w-md', md: 'sm:max-w-xl', lg: 'sm:max-w-3xl' };
 
+/**
+ * Bloquea el desplazamiento del fondo mientras la hoja está abierta y lo
+ * devuelve a su sitio al cerrar.
+ *
+ * En Safari de iPhone `overflow: hidden` en el cuerpo no alcanza: la página de
+ * atrás sigue arrastrándose bajo la hoja y, al cerrar, aparece en otra
+ * posición. Fijar el cuerpo compensando el desplazamiento sí lo detiene.
+ */
+function useBloqueoDeFondo(open: boolean): void {
+  useEffect(() => {
+    if (!open) return;
+    const y = window.scrollY;
+    const { body } = document;
+    const previo = {
+      overflow: body.style.overflow,
+      position: body.style.position,
+      top: body.style.top,
+      width: body.style.width,
+    };
+    body.style.overflow = 'hidden';
+    body.style.position = 'fixed';
+    body.style.top = `-${y}px`;
+    body.style.width = '100%';
+    return () => {
+      Object.assign(body.style, previo);
+      window.scrollTo(0, y);
+    };
+  }, [open]);
+}
+
 /** Modal centrado en escritorio, bottom sheet en móvil. */
 export function Modal({ open, onClose, title, subtitle, children, footer, size = 'md' }: Props) {
+  useBloqueoDeFondo(open);
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     document.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
-    };
+    return () => document.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
   if (!open) return null;
@@ -41,7 +68,7 @@ export function Modal({ open, onClose, title, subtitle, children, footer, size =
         role="dialog"
         aria-modal="true"
         className={cx(
-          'relative flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-lift',
+          'relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-lift',
           'animate-slide-up sm:animate-scale-in sm:rounded-3xl',
           SIZES[size],
         )}
@@ -58,7 +85,15 @@ export function Modal({ open, onClose, title, subtitle, children, footer, size =
             </IconButton>
           </header>
         )}
-        <div className="no-scrollbar flex-1 overflow-y-auto px-5 pb-5 sm:px-7">{children}</div>
+        <div
+          className={cx(
+            'no-scrollbar flex-1 overflow-y-auto overscroll-contain px-5 pb-5 sm:px-7',
+            // Sin pie, el último elemento quedaría bajo el indicador de inicio.
+            !footer && 'safe-bottom',
+          )}
+        >
+          {children}
+        </div>
         {footer && (
           <footer className="safe-bottom shrink-0 border-t border-black/5 bg-canvas px-5 py-4 sm:px-7">
             {footer}
@@ -78,11 +113,7 @@ export function Drawer({
   children,
   footer,
 }: Omit<Props, 'size'>) {
-  useEffect(() => {
-    if (!open) return;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  }, [open]);
+  useBloqueoDeFondo(open);
 
   if (!open) return null;
   return createPortal(
@@ -90,7 +121,7 @@ export function Drawer({
       <div className="absolute inset-0 animate-fade-in bg-ink/30 backdrop-blur-[3px]" onClick={onClose} />
       <aside
         className={cx(
-          'relative flex max-h-[88vh] w-full flex-col rounded-t-3xl bg-white shadow-lift animate-slide-up',
+          'relative flex max-h-[88dvh] w-full flex-col rounded-t-3xl bg-white shadow-lift animate-slide-up',
           'sm:max-h-none sm:w-[400px] sm:rounded-none sm:rounded-l-3xl sm:animate-fade-in',
         )}
       >
@@ -101,7 +132,14 @@ export function Drawer({
             <X className="h-5 w-5" />
           </IconButton>
         </header>
-        <div className="no-scrollbar flex-1 overflow-y-auto px-5 pb-4 sm:px-6">{children}</div>
+        <div
+          className={cx(
+            'no-scrollbar flex-1 overflow-y-auto overscroll-contain px-5 pb-4 sm:px-6',
+            !footer && 'safe-bottom',
+          )}
+        >
+          {children}
+        </div>
         {footer && (
           <footer className="safe-bottom shrink-0 border-t border-black/5 bg-canvas px-5 py-4 sm:px-6">{footer}</footer>
         )}

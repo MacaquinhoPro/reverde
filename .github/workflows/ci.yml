@@ -5,6 +5,7 @@
 #
 #   calidad   → lint, typecheck, unitarias con cobertura, build, deriva OpenAPI
 #   api       → pruebas de integración contra un PostgreSQL real
+#   respaldo  → respalda, destruye y restaura: demuestra que el respaldo sirve
 #   qa        → Playwright en los tres motores de navegador
 #   seguridad → auditoría de dependencias y búsqueda de secretos
 #
@@ -123,6 +124,55 @@ jobs:
 
       - name: Build de la API
         run: npm run build:api
+
+  # ── Respaldo ───────────────────────────────────────────────────────────
+  # Un script de respaldo que nadie ha probado restaurando no es un respaldo.
+  # Este trabajo siembra una base real, la respalda, borra cuatro tablas y
+  # restaura: si las cifras no vuelven exactas, la corrida falla.
+  respaldo:
+    name: Respaldo y restauración
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: reverde
+          POSTGRES_PASSWORD: reverde
+          POSTGRES_DB: reverde_dev
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U reverde -d reverde_dev"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgresql://reverde:reverde@localhost:5432/reverde_dev?schema=public
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Generar el cliente de Prisma
+        run: npm run prisma:generate -w @reverde/server
+
+      # El runner de Ubuntu ya trae pg_dump y pg_restore (postgresql-client),
+      # así que los scripts usan los binarios del sistema, no los del contenedor.
+      - name: Comprobar las herramientas de PostgreSQL
+        run: pg_dump --version && pg_restore --version && psql --version
+
+      - name: Migrar y sembrar
+        run: |
+          npm run db:deploy
+          npm run db:seed
+
+      - name: Respaldar, destruir y restaurar
+        run: npm run db:verify-backup
 
   qa:
     name: QA end-to-end (3 motores de navegador)

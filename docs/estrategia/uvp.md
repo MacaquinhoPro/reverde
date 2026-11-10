@@ -1,15 +1,32 @@
 # Propuesta Única de Valor (UVP)
 
-## La propuesta
+## La propuesta, en un párrafo
 
-> **Reverde le dice al establecimiento qué producto va a convertirse en
+En un supermercado o un restaurante de barrio, el producto que se va a perder
+no avisa: el riesgo solo se vuelve visible cuando ya es irreversible y toca
+botar. **Reverde le dice al establecimiento, cada mañana, cuál de sus productos
+va a convertirse en desperdicio, por qué —con los cuatro factores que componen
+el cálculo a la vista, no una caja negra—, y qué hacer hoy para evitarlo: con
+cuánto descuento se mueve, si conviene armar una caja de rescate o donarlo. Y
+cuando el administrador decide, lo publica en el mismo clic en un marketplace
+donde una persona cercana lo compra a mitad de precio.** Esa es la diferencia:
+un software de inventario registra lo que pasó y entrega un informe de merma a
+fin de mes; una app de rescate vende el excedente pero no ayuda a decidir qué
+hacer con él. Reverde une las dos mitades en un solo ciclo —ver el riesgo,
+decidir, recuperar el valor, medir el impacto— y cada venta vuelve a alimentar
+al motor, que aprende qué descuento funciona en cada categoría. El
+establecimiento deja de perder dinero que ya había gastado; el comprador come
+bien más barato; y el desperdicio evitado queda medido en kilos y en pesos, no
+en intenciones.
+
+### Las dos caras, en una frase
+
+> **Para el establecimiento:** Reverde le dice qué producto va a convertirse en
 > desperdicio, por qué, y qué hacer hoy para evitarlo — y le abre el canal de
-> venta en el mismo clic.**
+> venta en el mismo clic.
 
-Para clientes compradores, la misma frase vista desde el otro lado:
-
-> **Comida buena de supermercados y restaurantes cerca de ti, más barata porque
-> está a punto de perderse.**
+> **Para el cliente comprador:** comida buena de supermercados y restaurantes
+> cerca de ti, más barata porque está a punto de perderse.
 
 ### Fórmula
 

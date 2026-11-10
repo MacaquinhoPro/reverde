@@ -88,7 +88,7 @@ DB_HOST="$(printf '%s' "$TARGET_DATABASE_URL" | sed -E 's#.*@([^:/?]+).*#\1#')"
 # Barrera contra restaurar encima de producción por accidente.
 if [[ "$DB_NAME" == *prod* || "$DB_HOST" != "localhost" && "$DB_HOST" != "127.0.0.1" && "$DB_HOST" != "db" ]]; then
   if [[ "${I_UNDERSTAND_THIS_IS_PRODUCTION:-no}" != "yes" ]]; then
-    echo "✗ El destino «$DB_NAME» en «$DB_HOST» no parece una base local." >&2
+    echo "✗ El destino «${DB_NAME}» en «${DB_HOST}» no parece una base local." >&2
     echo "  Restaurar ahí borraría datos reales. Si es a propósito:" >&2
     echo "  I_UNDERSTAND_THIS_IS_PRODUCTION=yes npm run db:restore -- $DUMP" >&2
     exit 1
@@ -101,20 +101,30 @@ if ! run_restore_list "$DUMP" >/dev/null 2>&1; then
   echo "✗ El respaldo está corrupto o no es un volcado en formato personalizado." >&2
   exit 1
 fi
+# El respaldo guarda solo el hash, sin el nombre del archivo, para que el
+# volcado se pueda mover de carpeta sin invalidar la verificación. Por eso se
+# recalcula y se comparan las cadenas, en vez de usar `shasum -c`, que exige
+# el formato «hash  archivo».
 if [[ -f "$DUMP.sha256" ]] && command -v shasum >/dev/null 2>&1; then
-  if shasum -a 256 -c "$DUMP.sha256" >/dev/null 2>&1; then
-    echo "✓ Suma de verificación correcta"
+  ESPERADO="$(tr -d '[:space:]' < "$DUMP.sha256")"
+  ACTUAL="$(shasum -a 256 "$DUMP" | awk '{print $1}')"
+  if [[ "$ESPERADO" == "$ACTUAL" ]]; then
+    echo "✓ Suma de verificación correcta (SHA-256 ${ACTUAL:0:12}…)"
   else
     echo "✗ La suma de verificación NO coincide: el archivo cambió desde el respaldo." >&2
+    echo "  esperado: $ESPERADO" >&2
+    echo "  actual:   $ACTUAL" >&2
     exit 1
   fi
+else
+  echo "⚠ Sin archivo .sha256: no se puede comprobar que el volcado esté íntegro."
 fi
 
 echo
 echo "  Respaldo : $DUMP ($(du -h "$DUMP" | cut -f1), $(date -r "$DUMP" '+%Y-%m-%d %H:%M'))"
 echo "  Destino  : $DB_NAME @ $DB_HOST"
 echo
-echo "⚠ Se eliminará el contenido actual de «$DB_NAME» y se reemplazará."
+echo "⚠ Se eliminará el contenido actual de «${DB_NAME}» y se reemplazará."
 printf 'Escribe «restaurar» para continuar: '
 read -r CONFIRM
 [[ "$CONFIRM" == "restaurar" ]] || { echo "Cancelado."; exit 1; }

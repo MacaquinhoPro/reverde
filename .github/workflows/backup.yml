@@ -1,0 +1,82 @@
+# Respaldo programado de la base de datos de producción.
+#
+# Corre todos los días a las 07:00 UTC (02:00 en Bogotá, la hora de menos uso)
+# y conserva el volcado como artefacto cifrado del repositorio.
+#
+# Mientras no exista base de producción el trabajo NO falla: comprueba si está
+# el secreto `DATABASE_URL` y, si no está, se salta el respaldo y lo dice. Así
+# el workflow queda listo desde ya y el día que se aprovisione la base basta
+# con crear el secreto — sin tocar este archivo.
+#
+# El procedimiento manual, el RTO/RPO y el registro de restauraciones están en
+# docs/runbooks/backup-recovery.md
+name: Respaldo de la base
+
+on:
+  schedule:
+    # Todos los días a las 07:00 UTC. GitHub puede retrasarlo si hay cola.
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+    inputs:
+      motivo:
+        description: 'Por qué se lanza a mano (queda en el historial)'
+        required: false
+        default: 'respaldo manual'
+
+concurrency:
+  group: respaldo-produccion
+  cancel-in-progress: false
+
+jobs:
+  respaldo:
+    name: Volcado diario
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # Sin base de producción todavía no hay nada que respaldar. Se informa y
+      # se termina en verde: un workflow que falla todos los días se ignora, y
+      # un workflow que se ignora no protege nada.
+      - name: ¿Hay base de producción configurada?
+        id: revisar
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [[ -z "${DATABASE_URL}" ]]; then
+            echo "configurada=no" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Sin base de producción::No existe el secreto DATABASE_URL, así que no hay nada que respaldar. Ver docs/runbooks/backup-recovery.md (pendiente P-1)."
+          else
+            echo "configurada=sí" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Comprobar las herramientas de PostgreSQL
+        if: steps.revisar.outputs.configurada == 'sí'
+        run: pg_dump --version
+
+      - name: Respaldar
+        if: steps.revisar.outputs.configurada == 'sí'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          RETENTION_DAYS: '14'
+        run: bash scripts/db-backup.sh
+
+      # El volcado lleva datos personales (Ley 1581 de 2012): se guarda como
+      # artefacto privado del repositorio, con caducidad, y NUNCA se publica.
+      # Si algún día el destino es un bucket, cífralo en reposo y restringe
+      # quién puede descargarlo (pendientes B3 y B4 del runbook).
+      - name: Guardar el volcado
+        if: steps.revisar.outputs.configurada == 'sí'
+        uses: actions/upload-artifact@v4
+        with:
+          name: respaldo-${{ github.run_id }}
+          path: |
+            backups/*.dump
+            backups/*.dump.sha256
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Aviso si el respaldo falla
+        if: failure()
+        run: |
+          echo "::error title=El respaldo diario falló::Revisa el log. Sin respaldo del día, el RPO deja de ser 24 h."

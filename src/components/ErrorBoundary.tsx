@@ -54,7 +54,7 @@ export class ErrorBoundary extends Component<Props, State> {
     if (!error) return this.props.children;
 
     return (
-      <div className="min-h-screen bg-canvas flex items-center justify-center px-gutter py-section">
+      <div className="min-h-app bg-canvas flex items-center justify-center px-gutter py-section">
         <div className="card max-w-md w-full p-7 text-center animate-fade-up">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#FCEDEC]">
             <AlertTriangle className="h-6 w-6 text-[#B4453D]" aria-hidden="true" />

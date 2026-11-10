@@ -75,7 +75,7 @@ export default function EstablishmentDetail() {
         <KpiCard label="Publicados ahora" value={String(published.length)} icon={<ShoppingBag className="h-4 w-4" />} hint={`de ${stats.total} en inventario`} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <ChartCard title="Desperdicio evitado" subtitle="Kilogramos por semana">
           <AreaTrend data={series} dataKey="wasteAvoidedKg" formatter={(v) => kg(v)} />
         </ChartCard>
@@ -84,7 +84,7 @@ export default function EstablishmentDetail() {
         </ChartCard>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <Card className="p-4 sm:p-5">
           <SectionTitle title="Inventario por nivel de riesgo" subtitle={`${stats.total} productos`} />
           <div className="mt-4">

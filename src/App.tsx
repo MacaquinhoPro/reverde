@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import type { Role } from './types';
 import { AppProvider, useApp } from './store/AppContext';
+import { ReportProvider } from './store/ReportContext';
 import { ConsentProvider, useConsent } from './store/ConsentContext';
 import { ConsentGate } from './components/legal/ConsentGate';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -208,11 +209,14 @@ export default function App() {
     <ErrorBoundary name="app">
       <ConsentProvider>
         <AppProvider>
-          <BrowserRouter>
-            <ErrorBoundary name="rutas">
-              <Shell />
-            </ErrorBoundary>
-          </BrowserRouter>
+          {/* Dentro de AppProvider: el diálogo de reporte usa `toast`. */}
+          <ReportProvider>
+            <BrowserRouter>
+              <ErrorBoundary name="rutas">
+                <Shell />
+              </ErrorBoundary>
+            </BrowserRouter>
+          </ReportProvider>
         </AppProvider>
       </ConsentProvider>
     </ErrorBoundary>

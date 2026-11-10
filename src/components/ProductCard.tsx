@@ -85,7 +85,7 @@ export function ProductCard({ product, compact }: { product: Product; compact?: 
               addToCart(product.id);
               toast({ title: 'Agregado al carrito', description: product.name });
             }}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-700 text-white shadow-glow transition-all duration-200 hover:bg-brand-800 active:scale-95 disabled:bg-black/10 disabled:text-ink-faint disabled:shadow-none"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-brand-700 text-white shadow-glow transition-all duration-200 hover:bg-brand-800 active:scale-95 disabled:bg-black/10 disabled:text-ink-faint disabled:shadow-none sm:h-9 sm:w-9"
             aria-label={`Agregar ${product.name} al carrito`}
           >
             <Plus className="h-4 w-4" strokeWidth={2.6} />

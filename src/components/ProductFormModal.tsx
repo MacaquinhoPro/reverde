@@ -160,7 +160,7 @@ export function ProductFormModal({
         </div>
       }
     >
-      <div className="grid gap-5 pb-2 sm:grid-cols-[1fr_260px]">
+      <div className="grid grid-cols-1 gap-5 pb-2 sm:grid-cols-[minmax(0,1fr)_260px]">
         <div className="space-y-4">
           <Field label="Nombre del producto">
             <Input value={draft.name} onChange={(e) => set('name', e.target.value)} placeholder="Ej. Yogur natural" />

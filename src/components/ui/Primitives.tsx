@@ -30,12 +30,12 @@ export function SectionTitle({
   className?: string;
 }) {
   return (
-    <div className={cx('flex items-end justify-between gap-4', className)}>
-      <div>
+    <div className={cx('flex flex-wrap items-end justify-between gap-x-4 gap-y-3', className)}>
+      <div className="min-w-0 flex-1">
         <h2 className="text-[17px] font-bold tracking-tight text-ink sm:text-[19px]">{title}</h2>
         {subtitle && <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">{subtitle}</p>}
       </div>
-      {action}
+      {action && <div className="max-w-full shrink-0">{action}</div>}
     </div>
   );
 }

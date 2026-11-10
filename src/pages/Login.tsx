@@ -66,7 +66,7 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col lg:flex-row">
+    <div className="flex min-h-app flex-col lg:flex-row">
       {/* ── Columna de marca ─────────────────────────────────────────── */}
       <aside className="relative hidden overflow-hidden bg-brand-700 p-12 text-white lg:flex lg:w-[46%] lg:flex-col lg:justify-between">
         <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-brand-600/60 blur-3xl" />
@@ -174,7 +174,7 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPass((s) => !s)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-faint hover:text-ink"
+                  className="absolute right-1.5 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg text-ink-faint hover:text-ink active:scale-95"
                   aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
                   {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -216,7 +216,7 @@ export default function Login() {
               </span>
             </div>
 
-            <div className="mt-3 flex gap-1 overflow-x-auto no-scrollbar">
+            <div className="rail mt-3 gap-1">
               {(Object.keys(ROLE_LABEL) as Role[]).map((r) => (
                 <button
                   key={r}

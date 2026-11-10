@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:movil": "vite --host",
     "dev:api": "npm run dev -w @reverde/server",
     "dev:all": "npm run db:up && concurrently -n api,web -c magenta,green \"npm:dev:api\" \"npm:dev\"",
     "build": "tsc -b && vite build",
@@ -33,6 +34,7 @@
     "db:studio": "npm exec -w @reverde/server -- prisma studio",
     "db:backup": "bash scripts/db-backup.sh",
     "db:restore": "bash scripts/db-restore.sh",
+    "db:verify-backup": "bash scripts/db-verify-backup.sh",
     "docs:swatches": "node scripts/gen-swatches.mjs",
     "docs:pdf": "node scripts/docs-pdf.mjs",
     "docs:openapi": "tsx scripts/export-openapi.ts",

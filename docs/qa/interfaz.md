@@ -164,13 +164,19 @@ bug antes de cerrar la ronda.
 
 ### 3.7 · Móvil (con un teléfono real, no solo el emulador)
 
+Tres de estas comprobaciones ya las vigila una prueba automática en los
+perfiles `móvil-ios`, `móvil-android` y `móvil-pequeño`; aun así hay que
+hacerlas con el teléfono en la mano, porque el emulador no reproduce ni el
+teclado ni el dedo.
+
 | # | Comprobación | Resultado |
 |---|---|---|
-| 6.1 | Ningún control mide menos de 44 px de lado | |
+| 6.1 | Ningún control mide menos de 44 px de lado · *automatizado para la barra inferior* | |
 | 6.2 | La navegación inferior no tapa contenido ni el botón principal | |
 | 6.3 | El contenido respeta el notch y la barra inferior (`safe-area`) | |
 | 6.4 | El teclado no oculta el campo que se está escribiendo | |
-| 6.5 | **No hay scroll horizontal** en ninguna pantalla | |
+| 6.4b | **Al tocar un campo la página no hace zoom** (letra de 16 px) · *automatizado* | |
+| 6.5 | **No hay scroll horizontal** en ninguna pantalla · *automatizado en 17 rutas* | |
 | 6.6 | Los filtros en hoja inferior abren y cierran bien, y se pueden descartar | |
 | 6.7 | El inventario del administrador es usable como tarjetas | |
 | 6.8 | Funciona en vertical **y** en horizontal | |
@@ -216,6 +222,6 @@ Cubierto en parte por las pruebas automatizadas; esto es lo que falta mirar.
 | Q1 | Confirmar `escritorio-firefox` en la CI | Es el único motor sin verificar |
 | Q2 | `TODO:` auditoría con axe-core o Lighthouse (puntos 7.8 y 8.4) | La conformidad AA está afirmada, no medida |
 | Q3 | Cerrar el hallazgo **H-2** (campos sin etiqueta) | Accesibilidad |
-| Q4 | Implementar `prefers-reduced-motion` (pendiente U2 del UI Kit) | Accesibilidad |
+| ~~Q4~~ | ~~Implementar `prefers-reduced-motion`~~ | ✅ **Cerrado** junto con U2 del UI Kit |
 | Q5 | Hacer la primera ronda manual completa y registrarla arriba | Ninguna persona ha recorrido esta checklist todavía |
 | Q6 | `TODO:` probar en un teléfono físico, no solo en el emulador | El emulador no detecta problemas de teclado ni de rendimiento real |

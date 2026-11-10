@@ -73,7 +73,9 @@ export function Segmented<T extends string>({
   return (
     <div
       className={cx(
-        'inline-flex items-center gap-1 rounded-xl bg-black/[0.035] p-1',
+        // `max-w-full` + arrastre: con muchas opciones no empuja el layout
+        // fuera de la pantalla, se desliza con el pulgar.
+        'no-scrollbar inline-flex max-w-full items-center gap-1 overflow-x-auto rounded-xl bg-black/[0.035] p-1',
         className,
       )}
     >
@@ -82,8 +84,9 @@ export function Segmented<T extends string>({
           key={o.value}
           onClick={() => onChange(o.value)}
           className={cx(
-            'inline-flex items-center gap-1.5 rounded-[9px] font-semibold transition-all duration-200',
-            size === 'sm' ? 'px-2.5 py-1.5 text-[12px]' : 'px-3.5 py-2 text-[13px]',
+            'inline-flex shrink-0 items-center justify-center gap-1.5 rounded-[9px] font-semibold transition-all duration-200',
+            // 44 px de alto en móvil (token `field`); compacto desde `sm`.
+            size === 'sm' ? 'min-h-field px-3 text-[12px] sm:min-h-0 sm:px-2.5' : 'min-h-field px-3.5 text-[13px] sm:min-h-0 sm:py-2',
             value === o.value
               ? 'bg-white text-brand-700 shadow-soft'
               : 'text-ink-soft hover:text-ink',
@@ -111,7 +114,7 @@ export function Toggle({
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className="inline-flex items-center gap-3 text-sm font-medium text-ink"
+      className="inline-flex min-h-field items-center gap-3 py-1 text-left text-sm font-medium text-ink sm:min-h-0 sm:py-0"
     >
       <span
         className={cx(
