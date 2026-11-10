@@ -89,6 +89,8 @@ export interface RegisterInput {
   phone?: string;
   accountType: 'comprador' | 'establecimiento';
   establishment?: { name: string; type: 'supermercado' | 'restaurante'; address: string; city: string; schedule?: string };
+  /** Autorización de tratamiento de datos. Obligatoria (Ley 1581 de 2012). */
+  consent: { accepted: true; version: string; marketing: boolean };
 }
 
 export async function registerUser(input: RegisterInput) {
@@ -112,6 +114,11 @@ export async function registerUser(input: RegisterInput) {
         status: 'activo',
         phoneEncrypted: input.phone ? encrypt(input.phone) : null,
         avatarHue: 140 + Math.floor(Math.random() * 180),
+        // Evidencia del consentimiento. El momento lo pone el servidor: la
+        // fecha que mande el cliente no prueba nada.
+        consentVersion: input.consent.version,
+        consentAcceptedAt: new Date(),
+        consentMarketing: input.consent.marketing,
       },
     });
 

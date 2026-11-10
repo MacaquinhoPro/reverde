@@ -207,6 +207,14 @@ model User {
   /// Documento de identidad cifrado, usado por algunas pasarelas (PSE).
   documentEncrypted String?
   isDemo          Boolean    @default(false)
+  /// Prueba de la autorización de tratamiento de datos otorgada al registrarse
+  /// (Ley 1581 de 2012): versión del texto aceptado y momento exacto. Es la
+  /// evidencia de que el tratamiento fue consentido, así que no se hashea y
+  /// sobrevive a la anonimización de la cuenta.
+  consentVersion    String?
+  consentAcceptedAt DateTime?
+  /// Única finalidad opcional: comunicaciones comerciales. No condiciona el servicio.
+  consentMarketing  Boolean    @default(false)
   failedLogins    Int        @default(0)
   lockedUntil     DateTime?
   lastLoginAt     DateTime?

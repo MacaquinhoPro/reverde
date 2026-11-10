@@ -1,5 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { Client, STRONG_PASSWORD, createUser, login, prisma, resetDatabase } from './helpers.ts';
+import { CONSENT, Client, STRONG_PASSWORD, createUser, login, prisma, resetDatabase } from './helpers.ts';
 import { sentMails } from '../lib/mailer.ts';
 import { sha256 } from '../lib/crypto.ts';
 import { env } from '../config/env.ts';
@@ -19,6 +19,7 @@ describe('registro de usuarios reales', () => {
       email: 'Ana.Prueba@Example.COM',
       password: STRONG_PASSWORD,
       phone: '+57 300 1112233',
+      consent: CONSENT,
     });
 
     expect(res.status).toBe(201);
@@ -48,6 +49,7 @@ describe('registro de usuarios reales', () => {
       // Campos inyectados a propósito: el esquema los ignora.
       role: 'superadmin',
       accountType: 'comprador',
+      consent: CONSENT,
     });
     const user = await prisma.user.findUniqueOrThrow({ where: { email: 'intruso@example.com' } });
     expect(user.role).toBe('cliente');
@@ -61,6 +63,7 @@ describe('registro de usuarios reales', () => {
       password: STRONG_PASSWORD,
       accountType: 'establecimiento',
       establishment: { name: 'Mi Tienda', type: 'supermercado', address: 'Cra 1 #2-3', city: 'Bogotá' },
+      consent: CONSENT,
     });
     expect(res.status).toBe(201);
     expect(res.body.data.establishmentRequest.status).toBe('pendiente');
@@ -76,10 +79,74 @@ describe('registro de usuarios reales', () => {
         name: 'Test',
         email: `t${Math.random()}@example.com`,
         password,
+        consent: CONSENT,
       });
       expect(res.status).toBe(400);
       expect(res.body.error.details.length).toBeGreaterThan(0);
     }
+  });
+
+  /**
+   * Ley 1581 de 2012, art. 9: la autorización debe ser previa, expresa e
+   * informada. Si el registro pudiera completarse sin ella, el tratamiento
+   * sería ilícito desde el primer dato guardado.
+   */
+  it('no crea la cuenta sin autorización de tratamiento de datos', async () => {
+    const sinConsentimiento = await new Client().post('/api/auth/register', {
+      name: 'Sin permiso',
+      email: 'sin.permiso@example.com',
+      password: STRONG_PASSWORD,
+    });
+    expect(sinConsentimiento.status).toBe(400);
+    expect(await prisma.user.count({ where: { email: 'sin.permiso@example.com' } })).toBe(0);
+
+    // Un `false` explícito tampoco sirve: hace falta un acto afirmativo.
+    const rechazando = await new Client().post('/api/auth/register', {
+      name: 'Rechaza',
+      email: 'rechaza@example.com',
+      password: STRONG_PASSWORD,
+      consent: { accepted: false, version: '1.0', marketing: false },
+    });
+    expect(rechazando.status).toBe(400);
+
+    // Ni autorizar sin decir qué versión del texto se aceptó: sin eso no se
+    // podría demostrar QUÉ autorizó la persona.
+    const sinVersion = await new Client().post('/api/auth/register', {
+      name: 'Sin version',
+      email: 'sin.version@example.com',
+      password: STRONG_PASSWORD,
+      consent: { accepted: true, marketing: false },
+    });
+    expect(sinVersion.status).toBe(400);
+  });
+
+  it('guarda la evidencia del consentimiento con la hora del servidor', async () => {
+    const antes = new Date();
+    await new Client().post('/api/auth/register', {
+      name: 'Autoriza',
+      email: 'autoriza@example.com',
+      password: STRONG_PASSWORD,
+      // El cliente manda una fecha absurda: el servidor la ignora.
+      consent: { ...CONSENT, version: '1.0', marketing: true, acceptedAt: '1999-01-01T00:00:00.000Z' },
+    });
+
+    const user = await prisma.user.findUniqueOrThrow({ where: { email: 'autoriza@example.com' } });
+    expect(user.consentVersion).toBe('1.0');
+    expect(user.consentMarketing).toBe(true);
+    expect(user.consentAcceptedAt).not.toBeNull();
+    // La fecha la pone el servidor, no el cliente.
+    expect(user.consentAcceptedAt!.getTime()).toBeGreaterThanOrEqual(antes.getTime() - 1000);
+  });
+
+  it('la finalidad de comunicaciones comerciales es opcional y por defecto no se autoriza', async () => {
+    await new Client().post('/api/auth/register', {
+      name: 'Solo lo necesario',
+      email: 'minimo@example.com',
+      password: STRONG_PASSWORD,
+      consent: { accepted: true, version: '1.0' },
+    });
+    const user = await prisma.user.findUniqueOrThrow({ where: { email: 'minimo@example.com' } });
+    expect(user.consentMarketing).toBe(false);
   });
 
   it('no permite dos cuentas con el mismo correo', async () => {
@@ -88,6 +155,7 @@ describe('registro de usuarios reales', () => {
       name: 'Otra',
       email: 'repetido@example.com',
       password: STRONG_PASSWORD,
+      consent: CONSENT,
     });
     expect(res.status).toBe(409);
   });
@@ -201,7 +269,7 @@ describe('protección contra fuerza bruta', () => {
 describe('verificación de correo', () => {
   it('confirma el correo con el token del enlace y lo invalida después', async () => {
     const client = new Client();
-    await client.post('/api/auth/register', { name: 'Ver', email: 'ver@test.co', password: STRONG_PASSWORD });
+    await client.post('/api/auth/register', { name: 'Ver', email: 'ver@test.co', password: STRONG_PASSWORD, consent: CONSENT });
     const link = sentMails.at(-1)!.text.match(/token=([\w-]+)/)!;
     const token = link[1];
 
@@ -215,7 +283,7 @@ describe('verificación de correo', () => {
 
   it('rechaza un token vencido', async () => {
     const client = new Client();
-    await client.post('/api/auth/register', { name: 'Exp', email: 'exp@test.co', password: STRONG_PASSWORD });
+    await client.post('/api/auth/register', { name: 'Exp', email: 'exp@test.co', password: STRONG_PASSWORD, consent: CONSENT });
     const token = sentMails.at(-1)!.text.match(/token=([\w-]+)/)![1];
     await prisma.verificationToken.updateMany({ data: { expiresAt: new Date(Date.now() - 1000) } });
     expect((await client.post('/api/auth/verify-email', { token })).status).toBe(400);

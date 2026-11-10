@@ -586,7 +586,8 @@
                 "required": [
                   "name",
                   "email",
-                  "password"
+                  "password",
+                  "consent"
                 ],
                 "properties": {
                   "name": {
@@ -603,6 +604,32 @@
                   },
                   "phone": {
                     "type": "string"
+                  },
+                  "consent": {
+                    "type": "object",
+                    "description": "Autorización de tratamiento de datos. OBLIGATORIA (Ley 1581 de 2012, art. 9): sin ella no se crea la cuenta. El momento de la aceptación lo registra el servidor, no el cliente.",
+                    "required": [
+                      "accepted",
+                      "version"
+                    ],
+                    "properties": {
+                      "accepted": {
+                        "type": "boolean",
+                        "enum": [
+                          true
+                        ],
+                        "description": "Debe ser exactamente true: la autorización es un acto afirmativo."
+                      },
+                      "version": {
+                        "type": "string",
+                        "description": "Versión del texto legal que se mostró (LEGAL_VERSION)."
+                      },
+                      "marketing": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Única finalidad opcional: comunicaciones comerciales."
+                      }
+                    }
                   },
                   "accountType": {
                     "type": "string",
@@ -1523,6 +1550,56 @@
             }
           }
         }
+      }
+    },
+    "/api/users/me/export": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Descargar todos mis datos personales",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Derecho de acceso y portabilidad (Ley 1581 de 2012, art. 8). Devuelve la cuenta, los pedidos con su evidencia de consentimiento, las notificaciones, las sesiones y la actividad registrada. Los datos cifrados (teléfono, documento) se devuelven descifrados; el hash de la contraseña nunca sale. La descarga queda registrada en la bitácora de auditoría."
       }
     },
     "/api/establishments": {

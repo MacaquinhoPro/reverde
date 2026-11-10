@@ -49,6 +49,29 @@ export const registerSchema = z
         schedule: z.string().trim().max(120).optional(),
       })
       .optional(),
+    /**
+     * Autorización de tratamiento de datos (Ley 1581 de 2012, art. 9).
+     *
+     * Es **obligatoria**: sin autorización previa, expresa e informada no se
+     * puede crear la cuenta, así que el campo no es opcional y `accepted`
+     * tiene que valer exactamente `true` (un `"true"` o un `1` no sirven: la
+     * autorización debe ser un acto afirmativo inequívoco).
+     *
+     * `version` es la versión del texto legal que se le mostró
+     * (`LEGAL_VERSION` en src/data/legal.ts). Sin ella no se podría demostrar
+     * **qué** autorizó la persona. El momento lo pone el servidor, nunca el
+     * cliente.
+     *
+     * `marketing` es la única finalidad opcional y por eso va aparte: no
+     * condiciona el servicio.
+     */
+    consent: z.object({
+      accepted: z
+        .boolean()
+        .refine((v) => v === true, 'Debes autorizar el tratamiento de tus datos para crear la cuenta.'),
+      version: z.string().trim().min(1, 'Falta la versión del texto legal autorizado.').max(20),
+      marketing: z.boolean().default(false),
+    }),
   })
   .refine((v) => v.accountType !== 'establecimiento' || v.establishment !== undefined, {
     message: 'Para una cuenta de establecimiento debes enviar los datos del local.',

@@ -280,12 +280,24 @@ encabezado \`Idempotency-Key\`: repetir la clave devuelve la respuesta original.
             'application/json': {
               schema: {
                 type: 'object',
-                required: ['name', 'email', 'password'],
+                required: ['name', 'email', 'password', 'consent'],
                 properties: {
                   name: { type: 'string' },
                   email: { type: 'string', format: 'email' },
                   password: { type: 'string', minLength: 10, description: '10+ caracteres con mayúscula, minúscula y número' },
                   phone: { type: 'string' },
+                  consent: {
+                    type: 'object',
+                    description:
+                      'Autorización de tratamiento de datos. OBLIGATORIA (Ley 1581 de 2012, art. 9): sin ella no se crea la cuenta. ' +
+                      'El momento de la aceptación lo registra el servidor, no el cliente.',
+                    required: ['accepted', 'version'],
+                    properties: {
+                      accepted: { type: 'boolean', enum: [true], description: 'Debe ser exactamente true: la autorización es un acto afirmativo.' },
+                      version: { type: 'string', description: 'Versión del texto legal que se mostró (LEGAL_VERSION).' },
+                      marketing: { type: 'boolean', default: false, description: 'Única finalidad opcional: comunicaciones comerciales.' },
+                    },
+                  },
                   accountType: { type: 'string', enum: ['comprador', 'establecimiento'], default: 'comprador' },
                   establishment: {
                     type: 'object',
@@ -354,6 +366,16 @@ encabezado \`Idempotency-Key\`: repetir la clave devuelve la respuesta original.
       get: { ...op('Users', 'Ficha de una persona'), parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }] },
     },
     '/api/users/me': { delete: op('Users', 'Eliminar mi cuenta (baja lógica con anonimización)') },
+    '/api/users/me/export': {
+      get: {
+        ...op('Users', 'Descargar todos mis datos personales'),
+        description:
+          'Derecho de acceso y portabilidad (Ley 1581 de 2012, art. 8). Devuelve la cuenta, los pedidos con su ' +
+          'evidencia de consentimiento, las notificaciones, las sesiones y la actividad registrada. Los datos ' +
+          'cifrados (teléfono, documento) se devuelven descifrados; el hash de la contraseña nunca sale. ' +
+          'La descarga queda registrada en la bitácora de auditoría.',
+      },
+    },
 
     '/api/establishments': {
       get: {

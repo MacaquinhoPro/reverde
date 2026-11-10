@@ -5,7 +5,7 @@
  */
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
-import { app, createUser, prisma, resetDatabase, Client } from './helpers.ts';
+import { CONSENT, app, createUser, prisma, resetDatabase, Client } from './helpers.ts';
 import { assertProductionSafety, env, type Env } from '../config/env.ts';
 
 const prod = (overrides: Partial<Env> = {}): Env => ({
@@ -210,6 +210,7 @@ describe('auditoría', () => {
       email: 'auditada@test.co',
       password: 'Reverde2026',
       phone: '+57 300 1234567',
+      consent: CONSENT,
     });
 
     const log = await prisma.auditLog.findFirstOrThrow({ where: { action: 'auth.register' } });

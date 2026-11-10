@@ -311,15 +311,17 @@ Resumen; el detalle está en [`../legal/`](../legal/).
 | Exigencia (Ley 1581 de 2012) | Implementación |
 |---|---|
 | Autorización previa, expresa e informada | `ConsentGate` bloquea el uso hasta autorizar; se registra versión, fecha y finalidad |
+| Consentimiento **obligatorio en el registro** | `POST /api/auth/register` exige `consent.accepted === true` y `consent.version`; el momento lo pone el servidor. Guardado en `User.consentVersion/consentAcceptedAt/consentMarketing` |
 | Autorización por finalidad concreta | `Order.consentVersion/AcceptedAt/Purpose` (migración `20261103213844_order_consent`) |
-| Derecho a conocer y actualizar | `GET`/`PATCH /api/auth/me` · `DataRightsCard` |
+| Derecho a conocer y actualizar | `GET`/`PATCH /api/auth/me` · **`GET /api/users/me/export`** (copia completa y portable, registrada en auditoría) · `DataRightsCard` |
 | Derecho a supresión | `DELETE /api/users/me` — baja lógica con **anonimización**: el histórico de ventas del establecimiento sigue cuadrando, pero la identidad se desvincula |
 | Seguridad de los datos | Esta sección completa |
 | Canales de atención (art. 17) | `RESPONSABLE` en `src/data/legal.ts` — ⚠️ con datos de relleno |
 
-⚠️ **Dos huecos reales:** (1) los datos del responsable son marcadores
-(`NIT por definir`), así que los canales de atención **no son efectivos**; (2) no
-existe exportación de datos para el derecho de **portabilidad**.
+⚠️ **Un hueco real que queda:** los datos del responsable son marcadores
+(`NIT por definir`), así que los canales de atención que exige el artículo 17
+**no son efectivos**. La portabilidad, que antes faltaba, ya está cubierta por
+`GET /api/users/me/export`.
 
 ## 9 · Pendientes de seguridad
 
@@ -330,7 +332,7 @@ Ordenados por riesgo.
 | S1 | **Content Security Policy del frontend** | Alto | Helmet la desactiva porque la API es JSON; la SPA se sirve en Vercel y hoy va sin CSP. Hay que definirla en `vercel.json` |
 | S2 | **El límite de peticiones es por proceso** | Medio-alto | Con réplicas se multiplica. Mover a Redis |
 | S3 | **Datos del responsable del tratamiento sin completar** | Medio-alto | Incumplimiento del art. 17 mientras sean marcadores |
-| S4 | **Sin exportación de datos personales** | Medio | Derecho de portabilidad |
+| ~~S4~~ | ~~Sin exportación de datos personales~~ | — | ✅ **Cerrado**: `GET /api/users/me/export` devuelve la copia completa, descifrada y registrada en auditoría |
 | S5 | `TODO:` procedimiento de rotación de `ENCRYPTION_KEY` | Medio | El formato está versionado; falta el script y el runbook |
 | S6 | `TODO:` política de retención aplicada en base de datos | Medio | `legal.ts` declara 24 meses; nada los borra |
 | S7 | `TODO:` destino de despliegue de la API y gestión de secretos | Medio | Sin esto, las barreras de producción nunca se ejercitan |

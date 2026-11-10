@@ -10,6 +10,7 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Toggle } from '../../components/ui/Field';
 import { DataRightsCard } from '../../components/legal/DataRightsCard';
+import { FeedbackCard } from '../../components/FeedbackCard';
 
 export default function Profile() {
   const { user, orders, logout, resetDemo, toast } = useApp();
@@ -162,6 +163,9 @@ export default function Profile() {
           </Button>
         </div>
       </Card>
+
+      {/* Canal de reporte: antes de la tarjeta legal, que cierra la página */}
+      <FeedbackCard />
 
       {/* Habeas data */}
       <DataRightsCard />

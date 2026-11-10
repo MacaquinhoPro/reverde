@@ -12,6 +12,15 @@ export const app: Express = createApp();
 
 export const STRONG_PASSWORD = 'Reverde2026';
 
+/**
+ * Autorización de tratamiento de datos válida (Ley 1581 de 2012).
+ * `POST /api/auth/register` la exige, así que toda prueba que cree una cuenta
+ * por esa vía la envía. Que sea obligatoria es la razón de que exista esta
+ * constante: si fuera opcional, una prueba podría crear cuentas sin evidencia
+ * del consentimiento y nadie lo notaría.
+ */
+export const CONSENT = { accepted: true as const, version: '1.0', marketing: false };
+
 /** Borra todos los datos dejando intacto el catálogo de roles y permisos. */
 export async function resetDatabase(): Promise<void> {
   // El orden importa menos con TRUNCATE CASCADE, y es mucho más rápido.

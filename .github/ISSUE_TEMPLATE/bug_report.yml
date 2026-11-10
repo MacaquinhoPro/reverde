@@ -1,0 +1,101 @@
+name: 🐛 Reportar un error
+description: Algo no funciona como debería
+title: '[Error] '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por reportarlo. Un buen reporte se arregla mucho más rápido que uno vago.
+
+        **No incluyas datos personales** (correos reales, teléfonos, documentos) ni
+        contraseñas, tampoco en las capturas. Si el error aparece con datos de una
+        persona real, descríbelo sin copiar el dato.
+
+  - type: textarea
+    id: que-paso
+    attributes:
+      label: Qué pasó
+      description: El problema en una o dos frases.
+      placeholder: Al publicar un producto desde la alerta, el precio queda en cero.
+    validations:
+      required: true
+
+  - type: textarea
+    id: que-esperabas
+    attributes:
+      label: Qué esperabas que pasara
+    validations:
+      required: true
+
+  - type: textarea
+    id: pasos
+    attributes:
+      label: Pasos para reproducirlo
+      description: Lo más importante del reporte. Si no se puede reproducir, no se puede arreglar.
+      value: |
+        1. Entrar como `supermercado1@reverde.com`
+        2. Ir a …
+        3. Hacer clic en …
+        4. Ver el error
+    validations:
+      required: true
+
+  - type: dropdown
+    id: donde
+    attributes:
+      label: Dónde ocurre
+      options:
+        - Panel del establecimiento (/app/*)
+        - Tienda del cliente (/tienda/*)
+        - Panel del superadmin (/admin/*)
+        - Portada o inicio de sesión
+        - Centro legal o autorización de datos
+        - API (server/)
+        - No estoy seguro
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severidad
+    attributes:
+      label: Severidad
+      options:
+        - 'Bloquea: no se puede continuar'
+        - 'Alta: hay una vuelta, pero incómoda'
+        - 'Media: molesta pero se puede seguir'
+        - 'Baja: cosmético'
+    validations:
+      required: true
+
+  - type: input
+    id: entorno
+    attributes:
+      label: Navegador y dispositivo
+      placeholder: Chrome 141 en macOS · o · Safari en iPhone 14
+    validations:
+      required: true
+
+  - type: textarea
+    id: consola
+    attributes:
+      label: Errores de la consola
+      description: Abre las herramientas de desarrollo (F12) → Consola y pega lo que esté en rojo.
+      render: text
+
+  - type: textarea
+    id: capturas
+    attributes:
+      label: Capturas o video
+      description: Arrastra los archivos aquí. Muy útiles si el problema se ve.
+
+  - type: checkboxes
+    id: comprobaciones
+    attributes:
+      label: Antes de enviar
+      options:
+        - label: Busqué entre los issues abiertos y no está reportado
+          required: true
+        - label: El reporte no contiene datos personales ni contraseñas
+          required: true
+        - label: Probé si también pasa en otro navegador

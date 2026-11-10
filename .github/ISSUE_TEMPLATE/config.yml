@@ -1,0 +1,19 @@
+# Deshabilita los issues en blanco: las plantillas piden justo lo que hace
+# falta para poder actuar, y un issue vacío casi siempre acaba en una ronda de
+# preguntas antes de poder empezar.
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Reportar un problema de seguridad
+    url: https://github.com/MacaquinhoPro/reverde/security/advisories/new
+    about: >-
+      No abras un issue público para una vulnerabilidad. Usa un aviso de
+      seguridad privado, que solo ve el equipo.
+  - name: 🛡️ Ejercer tus derechos sobre tus datos personales
+    url: https://github.com/MacaquinhoPro/reverde/blob/develop/docs/legal/politica-privacidad.md
+    about: >-
+      Consultar, actualizar o eliminar tus datos (Ley 1581 de 2012) se hace
+      desde Perfil → Tus datos en la aplicación, o escribiendo al correo de
+      atención al titular.
+  - name: 📚 Documentación del proyecto
+    url: https://github.com/MacaquinhoPro/reverde/blob/develop/docs/STATUS.md
+    about: Estado de los hitos, arquitectura, decisiones y runbooks.

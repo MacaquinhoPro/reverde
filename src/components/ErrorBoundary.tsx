@@ -2,6 +2,7 @@ import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { captureError, track } from '../lib/analytics';
 import { resetAll } from '../lib/storage';
+import { feedbackUrl } from '../lib/feedback';
 
 interface Props {
   children: ReactNode;
@@ -83,11 +84,16 @@ export class ErrorBoundary extends Component<Props, State> {
           </div>
 
           <p className="mt-4 text-micro text-ink-faint">
-            Si vuelve a ocurrir, repórtalo desde{' '}
-            <a href="/legal/soporte" className="underline hover:text-brand-700">
-              el canal de soporte
+            Si vuelve a ocurrir,{' '}
+            <a
+              href={feedbackUrl('bug', '[Error] Pantalla de error al usar la aplicación')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-brand-700"
+            >
+              repórtalo aquí
             </a>
-            .
+            . El reporte no incluye datos personales.
           </p>
 
           {/* El detalle técnico se puede desplegar, pero no asusta de entrada. */}

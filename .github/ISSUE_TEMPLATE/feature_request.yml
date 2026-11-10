@@ -1,0 +1,70 @@
+name: 💡 Proponer una mejora
+description: Una idea para que Reverde funcione mejor
+title: '[Sugerencia] '
+labels: ['sugerencia']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Antes de escribir, mira el alcance acordado en
+        [`docs/estrategia/mvp-moscow.md`](../blob/develop/docs/estrategia/mvp-moscow.md).
+        Si lo que propones ya está como **Won't have**, hay una razón escrita: discútela
+        en el issue en vez de abrirlo como idea nueva.
+
+  - type: textarea
+    id: problema
+    attributes:
+      label: Qué problema resuelve
+      description: >-
+        Descríbelo desde lo que alguien quiere lograr, no desde la solución.
+        «La administradora no puede cargar 200 productos a mano» es útil;
+        «hay que agregar un botón de importar» ya es una solución.
+    validations:
+      required: true
+
+  - type: textarea
+    id: hoy
+    attributes:
+      label: Cómo se resuelve hoy
+      description: Si no se resuelve, dilo. Si hay una vuelta, descríbela.
+    validations:
+      required: true
+
+  - type: textarea
+    id: propuesta
+    attributes:
+      label: Qué propones
+    validations:
+      required: true
+
+  - type: dropdown
+    id: a-quien
+    attributes:
+      label: A quién beneficia
+      multiple: true
+      options:
+        - Administrador de establecimiento (supermercado o restaurante)
+        - Cliente comprador
+        - Superadministrador
+        - Al equipo de desarrollo
+    validations:
+      required: true
+
+  - type: dropdown
+    id: moscow
+    attributes:
+      label: Dónde encajaría en el alcance
+      description: Tu opinión; el equipo decide.
+      options:
+        - 'Must have: el MVP no sirve sin esto'
+        - 'Should have: importante, no bloqueante'
+        - 'Could have: estaría bien'
+        - 'No sé'
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Referencias o bocetos
+      description: Capturas de otras aplicaciones, enlaces o un dibujo.

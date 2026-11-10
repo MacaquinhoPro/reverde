@@ -1,5 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { Client, createEstablishment, createProduct, createUser, login, prisma, resetDatabase } from './helpers.ts';
+import { CONSENT, Client, createEstablishment, createProduct, createUser, login, prisma, resetDatabase } from './helpers.ts';
 import { syncIntelligence } from '../modules/inventory/service.ts';
 
 beforeEach(resetDatabase);
@@ -207,6 +207,7 @@ describe('solicitudes de establecimiento', () => {
       password: 'Reverde2026',
       accountType: 'establecimiento',
       establishment: { name: 'Tienda Nueva', type: 'restaurante', address: 'Cra 1 #2-3', city: 'Cali' },
+      consent: CONSENT,
     });
     const request = await prisma.establishmentRequest.findFirstOrThrow();
 

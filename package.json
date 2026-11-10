@@ -38,7 +38,9 @@
     "test:api:unit": "npm run test:unit -w @reverde/server",
     "test:api:coverage": "npm run test:unit:coverage -w @reverde/server",
     "test:qa:all": "playwright test",
-    "preview:headers": "node scripts/preview-with-headers.mjs"
+    "preview:headers": "node scripts/preview-with-headers.mjs",
+    "docs:legal": "tsx scripts/export-legal.ts",
+    "docs:legal:check": "tsx scripts/export-legal.ts --check"
   },
   "dependencies": {
     "lucide-react": "^1.47.0",
