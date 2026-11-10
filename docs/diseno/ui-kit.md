@@ -19,44 +19,56 @@ design.tokens.mjs ──► tailwind.config.js ──► clases (bg-brand-700, t
 
 ## 1 · Color
 
+![Paleta de color de Reverde](swatches/paleta.svg)
+
+> Las muestras de esta sección son SVG generados desde `design.tokens.mjs` con
+> `npm run docs:swatches` y versionados en [`swatches/`](swatches/). Al cambiar
+> un color, vuelve a ejecutar el script: el chip de la tabla y la lámina de
+> arriba se repintan solos y nunca quedan mintiendo sobre el valor real.
+
 ### Marca
 
-| Token | Clase | Hex | Uso |
-|---|---|---|---|
-| `brand.50` | `bg-brand-50` | `#F2F9F5` | Fondos de hover muy suaves, *skeletons* |
-| `brand.100` | `bg-brand-100` | `#DDEFE4` | Superficies suaves, botón secundario, selección de texto |
-| `brand.200` | `bg-brand-200` | `#C2E2CE` | Bordes activos, barra de desplazamiento, anillo de foco |
-| `brand.300` | `bg-brand-300` | `#9ECFB2` | Borde de hover |
-| `brand.400` | `bg-brand-400` | `#72B58B` | **Verde secundario** · acentos, borde de foco |
-| `brand.500` | `bg-brand-500` | `#4E9A6C` | Acentos medios |
-| `brand.600` | `bg-brand-600` | `#357C53` | Intermedio |
-| `brand.700` | `bg-brand-700` | `#1F5D42` | **Verde principal** · marca y acciones primarias |
-| `brand.800` | `bg-brand-800` | `#174734` | Hover de la acción primaria |
-| `brand.900` | `bg-brand-900` | `#0F3324` | Estado activo (presionado) |
+| Muestra | Token | Clase | Hex | Uso |
+|---|---|---|---|---|
+| <img src="swatches/brand-50.svg" width="64" height="22" alt="Muestra de #F2F9F5"> | `brand.50` | `bg-brand-50` | `#F2F9F5` | Fondos de hover muy suaves, *skeletons* |
+| <img src="swatches/brand-100.svg" width="64" height="22" alt="Muestra de #DDEFE4"> | `brand.100` | `bg-brand-100` | `#DDEFE4` | Superficies suaves, botón secundario, selección de texto |
+| <img src="swatches/brand-200.svg" width="64" height="22" alt="Muestra de #C2E2CE"> | `brand.200` | `bg-brand-200` | `#C2E2CE` | Bordes activos, barra de desplazamiento, anillo de foco |
+| <img src="swatches/brand-300.svg" width="64" height="22" alt="Muestra de #9ECFB2"> | `brand.300` | `bg-brand-300` | `#9ECFB2` | Borde de hover |
+| <img src="swatches/brand-400.svg" width="64" height="22" alt="Muestra de #72B58B"> | `brand.400` | `bg-brand-400` | `#72B58B` | **Verde secundario** · acentos, borde de foco |
+| <img src="swatches/brand-500.svg" width="64" height="22" alt="Muestra de #4E9A6C"> | `brand.500` | `bg-brand-500` | `#4E9A6C` | Acentos medios |
+| <img src="swatches/brand-600.svg" width="64" height="22" alt="Muestra de #357C53"> | `brand.600` | `bg-brand-600` | `#357C53` | Intermedio |
+| <img src="swatches/brand-700.svg" width="64" height="22" alt="Muestra de #1F5D42"> | `brand.700` | `bg-brand-700` | `#1F5D42` | **Verde principal** · marca y acciones primarias |
+| <img src="swatches/brand-800.svg" width="64" height="22" alt="Muestra de #174734"> | `brand.800` | `bg-brand-800` | `#174734` | Hover de la acción primaria |
+| <img src="swatches/brand-900.svg" width="64" height="22" alt="Muestra de #0F3324"> | `brand.900` | `bg-brand-900` | `#0F3324` | Estado activo (presionado) |
 
 ### Texto y lienzo
 
-| Token | Clase | Hex | Uso |
-|---|---|---|---|
-| `ink` | `text-ink` | `#1C2822` | Titulares y cuerpo |
-| `ink.soft` | `text-ink-soft` | `#6B756F` | Texto de apoyo, etiquetas |
-| `ink.faint` | `text-ink-faint` | `#9BA5A0` | Placeholders, ejes de gráficas |
-| `canvas` | `bg-canvas` | `#F8FBF9` | Fondo de la aplicación |
-| — | `bg-white` | `#FFFFFF` | Superficie de tarjetas y campos |
+| Muestra | Token | Clase | Hex | Uso |
+|---|---|---|---|---|
+| <img src="swatches/ink.svg" width="64" height="22" alt="Muestra de #1C2822"> | `ink` | `text-ink` | `#1C2822` | Titulares y cuerpo |
+| <img src="swatches/ink-soft.svg" width="64" height="22" alt="Muestra de #6B756F"> | `ink.soft` | `text-ink-soft` | `#6B756F` | Texto de apoyo, etiquetas |
+| <img src="swatches/ink-faint.svg" width="64" height="22" alt="Muestra de #9BA5A0"> | `ink.faint` | `text-ink-faint` | `#9BA5A0` | Placeholders, ejes de gráficas |
+| <img src="swatches/canvas.svg" width="64" height="22" alt="Muestra de #F8FBF9"> | `canvas` | `bg-canvas` | `#F8FBF9` | Fondo de la aplicación |
+| <img src="swatches/white.svg" width="64" height="22" alt="Muestra de #FFFFFF"> | — | `bg-white` | `#FFFFFF` | Superficie de tarjetas y campos |
 
 ### Riesgo
 
-| Nivel | Token | Hex | Significado |
-|---|---|---|---|
-| Bajo | `risk.low` | `#3F9E6B` | Score 0–39 |
-| Medio | `risk.mid` | `#D99A2B` | Score 40–69 |
-| Alto | `risk.high` | `#D96A63` | Score 70–100 |
+| Muestra | Nivel | Token | Hex | Significado |
+|---|---|---|---|---|
+| <img src="swatches/risk-low.svg" width="64" height="22" alt="Muestra de #3F9E6B"> | Bajo | `risk.low` | `#3F9E6B` | Score 0–39 |
+| <img src="swatches/risk-mid.svg" width="64" height="22" alt="Muestra de #D99A2B"> | Medio | `risk.mid` | `#D99A2B` | Score 40–69 |
+| <img src="swatches/risk-high.svg" width="64" height="22" alt="Muestra de #D96A63"> | Alto | `risk.high` | `#D96A63` | Score 70–100 |
 
 ### Gráficas
 
-Serie validada por separación cromática bajo daltonismo:
-`chart.ok` `#3F9E6B` · `chart.warn` `#E0A81C` · `chart.bad` `#C8453E`
-(expuestos también como `RISK_COLORS` en `src/components/charts/Charts.tsx`).
+Serie validada por separación cromática bajo daltonismo
+(expuesta también como `RISK_COLORS` en `src/components/charts/Charts.tsx`):
+
+| Muestra | Token | Hex | Serie |
+|---|---|---|---|
+| <img src="swatches/chart-ok.svg" width="64" height="22" alt="Muestra de #3F9E6B"> | `chart.ok` | `#3F9E6B` | `RISK_COLORS.bajo` · score 0–39 |
+| <img src="swatches/chart-warn.svg" width="64" height="22" alt="Muestra de #E0A81C"> | `chart.warn` | `#E0A81C` | `RISK_COLORS.medio` · score 40–69 |
+| <img src="swatches/chart-bad.svg" width="64" height="22" alt="Muestra de #C8453E"> | `chart.bad` | `#C8453E` | `RISK_COLORS.alto` · score 70–100 |
 
 ### Regla de accesibilidad · no negociable
 

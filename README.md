@@ -43,6 +43,10 @@ Todo el plan de trabajo está documentado en [`docs/`](docs/). Dos puntos de ent
 | Lanzamiento | [analytics y monitoreo](docs/analytics.md) · [despliegue](docs/runbooks/despliegue.md) · [respaldo y recuperación](docs/runbooks/backup-recovery.md) |
 | Legal | [política de privacidad](docs/legal/politica-privacidad.md) · [términos y condiciones](docs/legal/terminos-y-condiciones.md) |
 
+`npm run docs:pdf` exporta todo a `docs/pdf/`: un PDF por documento y
+`reverde-documentacion.pdf`, el compendio con portada, índice y los 26
+documentos (diagramas y muestras de color incluidos).
+
 ---
 
 ## Cómo ejecutarlo

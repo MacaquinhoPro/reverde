@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="767" height="482" viewBox="0 0 767 482" role="img" aria-label="Paleta de color de Reverde">
+  <rect width="767" height="482" rx="16" fill="#F8FBF9" stroke="rgba(28,40,34,.16)"/>
+  <text x="22" y="32" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#1C2822" letter-spacing=".04em">MARCA</text>
+  <rect x="22.5" y="40.5" width="65" height="47" rx="10" fill="#F2F9F5" stroke="rgba(28,40,34,.16)"/>
+  <text x="55" y="68" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#0F3324">50</text>
+  <text x="55" y="104" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#F2F9F5</text>
+  <rect x="95.5" y="40.5" width="65" height="47" rx="10" fill="#DDEFE4" stroke="rgba(28,40,34,.16)"/>
+  <text x="128" y="68" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#0F3324">100</text>
+  <text x="128" y="104" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#DDEFE4</text>
+  <rect x="168.5" y="40.5" width="65" height="47" rx="10" fill="#C2E2CE" stroke="rgba(28,40,34,.16)"/>
+  <text x="201" y="68" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#0F3324">200</text>
+  <text x="201" y="104" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#C2E2CE</text>
+  <rect x="241.5" y="40.5" width="65" height="47" rx="10" fill="#9ECFB2" stroke="rgba(28,40,34,.16)"/>
+  <text x="274" y="68" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#0F3324">300</text>
+  <text x="274" y="104" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#9ECFB2</text>
+  <rect x="314.5" y="40.5" width="65" height="47" rx="10" fill="#72B58B" stroke="rgba(28,40,34,.16)"/>
+  <text x="347" y="68" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#0F3324">400</text>
+  <text x="347" y="104" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#72B58B</text>
+  <rect x="387.5" y="40.5" width="65" height="47" rx="10" fill="#4E9A6C" stroke="rgba(28,40,34,.16)"/>
+  <text x="420" y="68" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#0F3324">500</text>
+  <text x="420" y="104" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#4E9A6C</text>
+  <rect x="460.5" y="40.5" width="65" height="47" rx="10" fill="#357C53" stroke="rgba(28,40,34,.16)"/>
+  <text x="493" y="68" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#FFFFFF">600</text>
+  <text x="493" y="104" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#357C53</text>
+  <rect x="533.5" y="40.5" width="65" height="47" rx="10" fill="#1F5D42" stroke="rgba(28,40,34,.16)"/>
+  <text x="566" y="68" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#FFFFFF">700</text>
+  <text x="566" y="104" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#1F5D42</text>
+  <rect x="606.5" y="40.5" width="65" height="47" rx="10" fill="#174734" stroke="rgba(28,40,34,.16)"/>
+  <text x="639" y="68" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#FFFFFF">800</text>
+  <text x="639" y="104" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#174734</text>
+  <rect x="679.5" y="40.5" width="65" height="47" rx="10" fill="#0F3324" stroke="rgba(28,40,34,.16)"/>
+  <text x="712" y="68" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#FFFFFF">900</text>
+  <text x="712" y="104" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#0F3324</text>
+  <text x="22" y="146" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#1C2822" letter-spacing=".04em">TEXTO Y LIENZO</text>
+  <rect x="22.5" y="154.5" width="65" height="47" rx="10" fill="#1C2822" stroke="rgba(28,40,34,.16)"/>
+  <text x="55" y="182" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#FFFFFF">ink</text>
+  <text x="55" y="218" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#1C2822</text>
+  <rect x="95.5" y="154.5" width="65" height="47" rx="10" fill="#6B756F" stroke="rgba(28,40,34,.16)"/>
+  <text x="128" y="182" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#FFFFFF">soft</text>
+  <text x="128" y="218" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#6B756F</text>
+  <rect x="168.5" y="154.5" width="65" height="47" rx="10" fill="#9BA5A0" stroke="rgba(28,40,34,.16)"/>
+  <text x="201" y="182" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#0F3324">faint</text>
+  <text x="201" y="218" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#9BA5A0</text>
+  <rect x="241.5" y="154.5" width="65" height="47" rx="10" fill="#F8FBF9" stroke="rgba(28,40,34,.16)"/>
+  <text x="274" y="182" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#0F3324">canvas</text>
+  <text x="274" y="218" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#F8FBF9</text>
+  <rect x="314.5" y="154.5" width="65" height="47" rx="10" fill="#FFFFFF" stroke="rgba(28,40,34,.16)"/>
+  <text x="347" y="182" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#0F3324">white</text>
+  <text x="347" y="218" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#FFFFFF</text>
+  <text x="22" y="260" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#1C2822" letter-spacing=".04em">RIESGO</text>
+  <rect x="22.5" y="268.5" width="65" height="47" rx="10" fill="#3F9E6B" stroke="rgba(28,40,34,.16)"/>
+  <text x="55" y="296" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#0F3324">bajo</text>
+  <text x="55" y="332" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#3F9E6B</text>
+  <rect x="95.5" y="268.5" width="65" height="47" rx="10" fill="#D99A2B" stroke="rgba(28,40,34,.16)"/>
+  <text x="128" y="296" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#0F3324">medio</text>
+  <text x="128" y="332" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#D99A2B</text>
+  <rect x="168.5" y="268.5" width="65" height="47" rx="10" fill="#D96A63" stroke="rgba(28,40,34,.16)"/>
+  <text x="201" y="296" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#0F3324">alto</text>
+  <text x="201" y="332" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#D96A63</text>
+  <text x="22" y="374" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#1C2822" letter-spacing=".04em">GRÁFICAS</text>
+  <rect x="22.5" y="382.5" width="65" height="47" rx="10" fill="#3F9E6B" stroke="rgba(28,40,34,.16)"/>
+  <text x="55" y="410" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#0F3324">ok</text>
+  <text x="55" y="446" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#3F9E6B</text>
+  <rect x="95.5" y="382.5" width="65" height="47" rx="10" fill="#E0A81C" stroke="rgba(28,40,34,.16)"/>
+  <text x="128" y="410" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#0F3324">warn</text>
+  <text x="128" y="446" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#E0A81C</text>
+  <rect x="168.5" y="382.5" width="65" height="47" rx="10" fill="#C8453E" stroke="rgba(28,40,34,.16)"/>
+  <text x="201" y="410" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#FFFFFF">bad</text>
+  <text x="201" y="446" text-anchor="middle" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" fill="#6B756F">#C8453E</text>
+</svg>

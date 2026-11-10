@@ -34,6 +34,9 @@ dist-ssr
 # Respaldos de base de datos
 /backups
 
+# Documentación exportada (se regenera con `npm run docs:pdf`)
+/docs/pdf
+
 # Pruebas
 /coverage
 /playwright-report
