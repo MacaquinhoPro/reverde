@@ -3,10 +3,67 @@
 @tailwind utilities;
 
 @layer base {
+  /**
+   * Espejo en CSS de los tokens de `design.tokens.mjs`, para lo que no pasa
+   * por Tailwind: SVG en línea, estilos calculados en JS y plantillas de
+   * correo. Al cambiar un valor allá, cámbialo aquí.
+   * Guía completa: docs/diseno/ui-kit.md
+   */
   :root {
+    /* Marca */
     --brand: #1F5D42;
     --brand-soft: #72B58B;
     --brand-pastel: #DDEFE4;
+    --brand-50: #F2F9F5;
+    --brand-100: #DDEFE4;
+    --brand-200: #C2E2CE;
+    --brand-300: #9ECFB2;
+    --brand-400: #72B58B;
+    --brand-500: #4E9A6C;
+    --brand-600: #357C53;
+    --brand-700: #1F5D42;
+    --brand-800: #174734;
+    --brand-900: #0F3324;
+
+    /* Texto y lienzo */
+    --ink: #1C2822;
+    --ink-soft: #6B756F;
+    --ink-faint: #9BA5A0;
+    --canvas: #F8FBF9;
+
+    /* Riesgo (el color nunca es la única señal: siempre con texto e icono) */
+    --risk-low: #3F9E6B;
+    --risk-mid: #D99A2B;
+    --risk-high: #D96A63;
+
+    /* Serie de gráficas */
+    --chart-ok: #3F9E6B;
+    --chart-warn: #E0A81C;
+    --chart-bad: #C8453E;
+
+    /* Radios */
+    --radius-xl: 14px;
+    --radius-2xl: 20px;
+    --radius-3xl: 28px;
+
+    /* Sombras */
+    --shadow-soft: 0 1px 2px rgba(28, 40, 34, 0.04), 0 4px 16px rgba(28, 40, 34, 0.05);
+    --shadow-lift: 0 2px 4px rgba(28, 40, 34, 0.05), 0 12px 32px rgba(28, 40, 34, 0.09);
+    --shadow-glow: 0 8px 30px rgba(31, 93, 66, 0.18);
+
+    /* Espaciados semánticos */
+    --gutter: 1rem;
+    --gutter-lg: 1.5rem;
+    --section: 2rem;
+    --sidebar: 15rem;
+    --nav-mobile: 4.25rem;
+    --field: 2.75rem;
+
+    /* Movimiento: una sola curva en toda la aplicación */
+    --ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
+    --duration-fast: 0.2s;
+    --duration-base: 0.3s;
+    --duration-slow: 0.45s;
   }
   html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
   body {
