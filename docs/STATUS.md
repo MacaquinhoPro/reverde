@@ -13,6 +13,10 @@ Estado real de los hitos, con evidencia verificable. **Ningún hito figura como
 > SSL/HTTPS), así que aquí van separadas como 18 y 19 para llegar a 23. Si la
 > intención era otra, se renumera.
 
+> Para sustentar el proyecto: [`SUSTENTACION.md`](./SUSTENTACION.md) tiene el
+> guion de la demo paso a paso, cómo defender cada hito y respuestas a las
+> preguntas difíciles.
+
 ## Verificación ejecutada hoy
 
 | Comprobación | Comando | Resultado |
