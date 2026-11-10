@@ -21,6 +21,7 @@ import type { Role } from './types';
 import { AppProvider, useApp } from './store/AppContext';
 import { ConsentProvider, useConsent } from './store/ConsentContext';
 import { ConsentGate } from './components/legal/ConsentGate';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { AppShell, type NavItem } from './components/layout/AppShell';
 import { ClientShell } from './components/layout/ClientShell';
 import { Toaster } from './components/ui/Toaster';
@@ -202,12 +203,18 @@ function Shell() {
 
 export default function App() {
   return (
-    <ConsentProvider>
-      <AppProvider>
-        <BrowserRouter>
-          <Shell />
-        </BrowserRouter>
-      </AppProvider>
-    </ConsentProvider>
+    // El límite más externo: si algo falla al montar los providers o el
+    // enrutador, la persona ve una salida en vez de una pantalla en blanco.
+    <ErrorBoundary name="app">
+      <ConsentProvider>
+        <AppProvider>
+          <BrowserRouter>
+            <ErrorBoundary name="rutas">
+              <Shell />
+            </ErrorBoundary>
+          </BrowserRouter>
+        </AppProvider>
+      </ConsentProvider>
+    </ErrorBoundary>
   );
 }

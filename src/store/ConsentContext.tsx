@@ -2,10 +2,12 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from 'react';
+import { setAnalyticsConsent } from '../lib/analytics';
 import {
   buildConsent,
   clearConsent,
@@ -69,9 +71,20 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
     setConsent(null);
   }, []);
 
+  const hasConsent = isConsentValid(consent);
+
+  /**
+   * La medición de producto sigue a la autorización del titular: sin
+   * consentimiento vigente no se registra ningún evento, y al revocarlo se
+   * apaga de inmediato (Ley 1581 de 2012). Ver src/lib/analytics.ts.
+   */
+  useEffect(() => {
+    setAnalyticsConsent(hasConsent);
+  }, [hasConsent]);
+
   const value = useMemo<ConsentApi>(
-    () => ({ consent, hasConsent: isConsentValid(consent), accept, setMarketing, revoke }),
-    [consent, accept, setMarketing, revoke],
+    () => ({ consent, hasConsent, accept, setMarketing, revoke }),
+    [consent, hasConsent, accept, setMarketing, revoke],
   );
 
   return <ConsentContext.Provider value={value}>{children}</ConsentContext.Provider>;

@@ -37,7 +37,8 @@
     "docs:openapi:check": "node scripts/check-openapi-drift.mjs",
     "test:api:unit": "npm run test:unit -w @reverde/server",
     "test:api:coverage": "npm run test:unit:coverage -w @reverde/server",
-    "test:qa:all": "playwright test"
+    "test:qa:all": "playwright test",
+    "preview:headers": "node scripts/preview-with-headers.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.47.0",
