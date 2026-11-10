@@ -138,7 +138,7 @@ export async function writeOff(
  * muestra siempre refleja los datos guardados.
  */
 export async function syncIntelligence(establishmentId: string) {
-  const [products, history] = await Promise.all([
+  const [products, history, existingAlerts] = await Promise.all([
     prisma.product.findMany({
       where: { establishmentId, deletedAt: null },
       include: { inventory: true },
@@ -149,7 +149,14 @@ export async function syncIntelligence(establishmentId: string) {
       take: 500,
       orderBy: { occurredAt: 'desc' },
     }),
+    // Se leen las alertas vigentes para no pisar un silencio que la persona
+    // puso a mano: recalcular el riesgo no debe reabrir lo que ya silenció.
+    prisma.expirationAlert.findMany({
+      where: { establishmentId },
+      select: { productId: true, status: true, snoozedUntil: true },
+    }),
   ]);
+  const alertByProduct = new Map(existingAlerts.map((a) => [a.productId, a]));
 
   const now = new Date();
   const operations: Prisma.PrismaPromise<unknown>[] = [];
@@ -191,6 +198,11 @@ export async function syncIntelligence(establishmentId: string) {
     // Solo generan alerta los productos con riesgo real y stock disponible.
     const deservesAlert = risk.level !== 'bajo' && available > 0;
     if (deservesAlert) {
+      const current = alertByProduct.get(product.id);
+      // Un silencio vigente se respeta; uno vencido deja que la alerta vuelva.
+      const stillSnoozed =
+        current?.status === 'silenciada' && current.snoozedUntil !== null && current.snoozedUntil > now;
+
       operations.push(
         prisma.expirationAlert.upsert({
           where: { productId: product.id },
@@ -209,9 +221,10 @@ export async function syncIntelligence(establishmentId: string) {
             wasteProbability: risk.wasteProbability,
             title: copy.title,
             body: copy.body,
-            // Una alerta resuelta vuelve a abrirse si el riesgo persiste.
-            status: 'abierta',
-            resolvedAt: null,
+            // El texto y el puntaje siempre se refrescan; el estado solo se
+            // reabre si no hay un silencio activo (una resuelta sí vuelve
+            // cuando el riesgo persiste).
+            ...(stillSnoozed ? {} : { status: 'abierta' as const, resolvedAt: null, snoozedUntil: null }),
           },
         }),
       );

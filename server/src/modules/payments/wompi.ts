@@ -16,6 +16,7 @@
 import { createHash } from 'node:crypto';
 import { env } from '../../config/env.ts';
 import { logger } from '../../lib/logger.ts';
+import { RetryableHttpError, withRetry } from '../../lib/retry.ts';
 import { safeEqual } from '../../lib/crypto.ts';
 import { serverError } from '../../lib/errors.ts';
 import {
@@ -115,23 +116,34 @@ export const wompiAdapter: PaymentProviderAdapter = {
   async fetchTransaction(transactionId: string) {
     if (!env.WOMPI_PRIVATE_KEY) return null;
     try {
-      const response = await fetch(`${env.WOMPI_API_URL}/transactions/${encodeURIComponent(transactionId)}`, {
-        headers: { Authorization: `Bearer ${env.WOMPI_PRIVATE_KEY}` },
-        signal: AbortSignal.timeout(8000),
-      });
-      if (!response.ok) {
-        logger.warn({ transactionId, status: response.status }, 'no se pudo consultar la transacción en Wompi');
-        return null;
-      }
-      const body = (await response.json()) as { data?: Record<string, unknown> };
-      const tx = body.data ?? {};
-      return {
-        status: mapWompiStatus(tx.status as string),
-        amountInCents: Number(tx.amount_in_cents ?? 0),
-        reference: String(tx.reference ?? ''),
-      };
+      // La consulta es de solo lectura, así que se puede reintentar sin riesgo
+      // de cobrar dos veces. Un 4xx (transacción inexistente, llave inválida)
+      // no se reintenta: no va a cambiar.
+      return await withRetry(
+        async () => {
+          const response = await fetch(`${env.WOMPI_API_URL}/transactions/${encodeURIComponent(transactionId)}`, {
+            headers: { Authorization: `Bearer ${env.WOMPI_PRIVATE_KEY}` },
+            signal: AbortSignal.timeout(8000),
+          });
+          if (!response.ok) {
+            throw new RetryableHttpError(
+              `Wompi respondió ${response.status} al consultar la transacción`,
+              response.status,
+            );
+          }
+          const body = (await response.json()) as { data?: Record<string, unknown> };
+          const tx = body.data ?? {};
+          return {
+            status: mapWompiStatus(tx.status as string),
+            amountInCents: Number(tx.amount_in_cents ?? 0),
+            reference: String(tx.reference ?? ''),
+          };
+        },
+        { operation: 'wompi.fetchTransaction', attempts: 3, baseDelayMs: 400 },
+      );
     } catch (error) {
-      logger.warn({ err: error, transactionId }, 'error consultando la transacción en Wompi');
+      // Quien llama decide: no se confirma el pago si no se pudo verificar.
+      logger.warn({ err: error, transactionId }, 'no se pudo consultar la transacción en Wompi');
       return null;
     }
   },

@@ -176,8 +176,9 @@ describe('histórico semilla', () => {
   });
 
   it('el generador es determinista: las cifras de la demo no cambian entre recargas', () => {
+    // Los ids llevan un sufijo aleatorio: se comparan los datos, no los ids.
     const limpiar = (s: ReturnType<typeof buildSeedSales>) =>
-      s.map(({ id, ...rest }) => ({ ...rest, date: rest.date.slice(0, 10) }));
+      s.map((venta) => ({ ...venta, id: '', date: venta.date.slice(0, 10) }));
     expect(limpiar(buildSeedSales())).toEqual(limpiar(buildSeedSales()));
   });
 

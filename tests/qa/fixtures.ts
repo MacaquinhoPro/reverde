@@ -37,7 +37,7 @@ type Fixtures = {
 export const test = base.extend<Fixtures>({
   conConsentimiento: [true, { option: true }],
 
-  page: async ({ page, conConsentimiento }, use) => {
+  page: async ({ page, conConsentimiento }, aplicar) => {
     if (conConsentimiento) {
       await page.addInitScript((payload) => {
         try {
@@ -47,16 +47,16 @@ export const test = base.extend<Fixtures>({
         }
       }, JSON.stringify(consentRecord()));
     }
-    await use(page);
+    await aplicar(page);
   },
 
-  erroresDeConsola: async ({ page }, use) => {
+  erroresDeConsola: async ({ page }, aplicar) => {
     const errores: string[] = [];
     page.on('console', (msg) => {
       if (msg.type() === 'error') errores.push(msg.text());
     });
     page.on('pageerror', (err) => errores.push(err.message));
-    await use(errores);
+    await aplicar(errores);
   },
 });
 

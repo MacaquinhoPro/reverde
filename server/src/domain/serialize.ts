@@ -181,6 +181,14 @@ export const orderDTO = (o: OrderWithItems) => {
     status: uiStatus(o),
     paymentStatus: o.status as string,
     pickupWindow: o.pickupWindow,
+    consent:
+      o.consentVersion && o.consentAcceptedAt
+        ? {
+            version: o.consentVersion,
+            acceptedAt: o.consentAcceptedAt.toISOString(),
+            purpose: o.consentPurpose ?? '',
+          }
+        : undefined,
     expiresAt: o.expiresAt?.toISOString() ?? null,
     paidAt: o.paidAt?.toISOString() ?? null,
     checkout: payment

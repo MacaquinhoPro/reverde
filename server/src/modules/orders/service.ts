@@ -10,7 +10,7 @@
  *  - Confirmar un pago es idempotente: un webhook repetido no vuelve a
  *    descontar inventario ni a registrar la venta dos veces.
  */
-import { randomBytes, randomUUID } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 import type { OrderMode, PaymentMethod, PaymentStatus, Prisma } from '@prisma/client';
 import { prisma } from '../../lib/prisma.ts';
 import { env } from '../../config/env.ts';
@@ -32,6 +32,8 @@ export interface CreateOrderInput {
   mode: OrderMode;
   paymentMethod: PaymentMethod;
   idempotencyKey?: string;
+  /** Autorización de tratamiento de datos dada al confirmar el pedido. */
+  consent?: { version: string; acceptedAt: string; purpose: string };
 }
 
 export async function createOrderFromCart(input: CreateOrderInput) {
@@ -101,6 +103,10 @@ export async function createOrderFromCart(input: CreateOrderInput) {
           pickupWindow: pickupWindow(mode),
           expiresAt,
           idempotencyKey: input.idempotencyKey ?? null,
+          consentVersion: input.consent?.version ?? null,
+          // La fecha la fija el servidor: no se confía en el reloj del cliente.
+          consentAcceptedAt: input.consent ? new Date() : null,
+          consentPurpose: input.consent?.purpose ?? null,
           items: {
             create: lines.map((l) => ({
               productId: l.product.id,

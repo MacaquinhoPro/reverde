@@ -23,6 +23,17 @@ const createSchema = z.object({
    * confirma la pasarela. `establecimiento` es el único que no la usa.
    */
   paymentMethod: z.enum(['tarjeta', 'pse', 'nequi', 'bancolombia', 'establecimiento']).default('tarjeta'),
+  /**
+   * Autorización de tratamiento de datos del pedido. Se guarda como prueba
+   * (Ley 1581 de 2012); la fecha la sella el servidor.
+   */
+  consent: z
+    .object({
+      version: z.string().trim().min(1).max(40),
+      purpose: z.string().trim().min(1).max(300),
+      acceptedAt: z.string().optional(),
+    })
+    .optional(),
 });
 
 /**
@@ -43,6 +54,9 @@ ordersRouter.post(
       mode,
       paymentMethod,
       idempotencyKey,
+      consent: req.body.consent
+        ? { ...req.body.consent, acceptedAt: new Date().toISOString() }
+        : undefined,
     });
 
     await audit(req, {

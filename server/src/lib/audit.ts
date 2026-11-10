@@ -11,6 +11,12 @@ export interface AuditInput {
   entityId?: string | null;
   establishmentId?: string | null;
   metadata?: Record<string, unknown>;
+  /**
+   * Actor explícito, para las acciones en las que la sesión todavía no está
+   * resuelta en la petición (registro, alta de superadministrador).
+   */
+  actorUserId?: string | null;
+  actorRole?: string | null;
 }
 
 export async function audit(req: Request | null, input: AuditInput): Promise<void> {
@@ -21,8 +27,8 @@ export async function audit(req: Request | null, input: AuditInput): Promise<voi
         entity: input.entity,
         entityId: input.entityId ?? null,
         establishmentId: input.establishmentId ?? null,
-        actorUserId: req?.auth?.user.id ?? null,
-        actorRole: req?.auth?.user.role ?? null,
+        actorUserId: input.actorUserId ?? req?.auth?.user.id ?? null,
+        actorRole: input.actorRole ?? req?.auth?.user.role ?? null,
         ipHash: req ? hashIp(clientIp(req)) : null,
         userAgent: req?.headers['user-agent']?.slice(0, 250) ?? null,
         metadata: (input.metadata ?? {}) as object,

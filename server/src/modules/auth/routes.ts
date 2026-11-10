@@ -52,6 +52,9 @@ authRouter.post(
       action: 'auth.register',
       entity: 'User',
       entityId: user.id,
+      // La sesión se acaba de crear: el actor se indica explícitamente.
+      actorUserId: user.id,
+      actorRole: user.role,
       metadata: { accountType: req.body.accountType, requestId: request?.id ?? null },
     });
     return created(res, {
@@ -78,7 +81,7 @@ authRouter.post(
       const user = await authenticate(email, password);
       await recordAttempt(email, ip, true);
       await issueSession(req, res, user.id);
-      await audit(req, { action: 'auth.login', entity: 'User', entityId: user.id });
+      await audit(req, { action: 'auth.login', entity: 'User', entityId: user.id, actorUserId: user.id, actorRole: user.role });
       return ok(res, { user: userDTO(user) });
     } catch (error) {
       await recordAttempt(email, ip, false);
@@ -317,7 +320,7 @@ authRouter.post(
         emailVerifiedAt: new Date(),
       },
     });
-    await audit(req, { action: 'auth.bootstrap_superadmin', entity: 'User', entityId: user.id });
+    await audit(req, { action: 'auth.bootstrap_superadmin', entity: 'User', entityId: user.id, actorUserId: user.id, actorRole: user.role });
     return created(res, { user: userDTO(user), message: 'Superadministrador creado. Retira ya el token de alta.' });
   }),
 );

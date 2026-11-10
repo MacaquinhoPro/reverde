@@ -122,7 +122,21 @@ export function assertProductionSafety(e: Env = env): void {
   if (!e.API_URL.startsWith('https://')) errors.push('API_URL debe usar HTTPS.');
   if (e.CORS_ORIGINS.length === 0) errors.push('CORS_ORIGINS no puede quedar vacío en producción.');
   if (e.CORS_ORIGINS.some((o) => o === '*')) errors.push('CORS_ORIGINS no admite comodín en producción.');
-  if (e.ENCRYPTION_KEY.includes('dev-only')) errors.push('ENCRYPTION_KEY sigue siendo la de desarrollo.');
+  // La llave llega en base64: comparar el texto crudo nunca detectaba la de
+  // desarrollo. Se decodifica antes de buscar las marcas conocidas.
+  const decodedKey = (() => {
+    try {
+      return Buffer.from(e.ENCRYPTION_KEY, 'base64').toString('utf8');
+    } catch {
+      return e.ENCRYPTION_KEY;
+    }
+  })();
+  if (/dev-only|test-only|do-not-use/i.test(`${e.ENCRYPTION_KEY} ${decodedKey}`)) {
+    errors.push('ENCRYPTION_KEY sigue siendo la de desarrollo o de pruebas.');
+  }
+  if (/dev|test/i.test(e.IP_HASH_SALT) && e.IP_HASH_SALT.length < 24) {
+    errors.push('IP_HASH_SALT parece ser la de desarrollo: genera una con `openssl rand -base64 32`.');
+  }
   if (e.MAIL_TRANSPORT === 'log') errors.push('MAIL_TRANSPORT debe ser smtp en producción.');
   if (e.PAYMENTS_PROVIDER === 'mock') errors.push('PAYMENTS_PROVIDER no puede ser mock en producción.');
   if (e.PAYMENTS_PROVIDER === 'wompi') {

@@ -13,8 +13,11 @@ export default defineConfig({
     include: ['tests/load/**/*.test.ts'],
     testTimeout: 180_000,
     hookTimeout: 60_000,
+    // Un único hilo y sin paralelismo entre archivos: así las mediciones son
+    // comparables entre corridas.
     pool: 'threads',
-    poolOptions: { threads: { singleThread: true, minThreads: 1, maxThreads: 1 } },
+    fileParallelism: false,
+    maxWorkers: 1,
     reporters: ['verbose'],
   },
 });

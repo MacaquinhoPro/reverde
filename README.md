@@ -8,17 +8,113 @@ Prototipo funcional (MVP) de una plataforma **B2B2C** que reduce el desperdicio 
 > Reverde detecta qué alimentos tienen riesgo de convertirse en desperdicio, ayuda al establecimiento a
 > decidir qué hacer con ellos y los conecta con compradores para recuperar valor antes de perderlos.
 
-Este es un **prototipo académico**: usa datos simulados, lógica heurística en lugar de un modelo de ML real,
-`localStorage` como persistencia y una pasarela de pago simulada. No hay servicios externos: funciona sin internet.
+Este es un **prototipo académico**: la lógica de riesgo es heurística explicable en lugar de un modelo de ML
+entrenado, y la pasarela de pago corre por defecto en modo simulado.
+
+> ### ⚠️ Importante: el repositorio tiene dos aplicaciones, y todavía no están conectadas
+>
+> | | Qué es | Persistencia | Estado |
+> |---|---|---|---|
+> | **SPA** (`src/`) | La aplicación que se demuestra: 23 pantallas, React 19 | **`localStorage`** | ✅ funciona sin internet |
+> | **API** (`server/`) | Backend completo: Express 5, Prisma, PostgreSQL, 86 endpoints | **PostgreSQL 16** | ✅ funciona, con pruebas de integración |
+>
+> **La SPA no hace ninguna llamada a la API.** Son dos implementaciones paralelas del
+> mismo dominio (el motor de riesgo existe dos veces: `src/lib/ai.ts` y
+> `server/src/domain/risk.ts`). Conectarlas es el Must-have **M14**, el riesgo
+> principal del MVP: ver [`docs/estrategia/mvp-moscow.md`](docs/estrategia/mvp-moscow.md#cómo-se-cierra-m14).
+
+---
+
+## Documentación
+
+Todo el plan de trabajo está documentado en [`docs/`](docs/). Punto de entrada:
+**[`docs/STATUS.md`](docs/STATUS.md)** — estado real de los 23 hitos con su evidencia.
+
+| Fase | Documentos |
+|---|---|
+| Estrategia | [problema–solución](docs/estrategia/problema-solucion.md) · [buyer persona](docs/estrategia/buyer-persona.md) · [UVP](docs/estrategia/uvp.md) · [alcance MoSCoW](docs/estrategia/mvp-moscow.md) |
+| Diseño | [user flow](docs/diseno/user-flow.md) · [wireframes y pruebas con usuarios](docs/diseno/wireframes.md) · [UI Kit](docs/diseno/ui-kit.md) |
+| Arquitectura | [stack](docs/arquitectura/stack.md) · [modelo de datos](docs/arquitectura/modelo-datos.md) · [API](docs/arquitectura/api.md) · [seguridad](docs/arquitectura/seguridad.md) · [OpenAPI](docs/arquitectura/openapi.yaml) |
+| Desarrollo | [integraciones de terceros](docs/integraciones.md) |
+| Calidad | [pruebas](docs/TESTING.md) · [plan de QA](docs/QA-PLAN.md) · [checklist de interfaz](docs/qa/interfaz.md) |
+| Lanzamiento | [analytics y monitoreo](docs/analytics.md) · [despliegue](docs/runbooks/despliegue.md) · [respaldo y recuperación](docs/runbooks/backup-recovery.md) |
+| Legal | [política de privacidad](docs/legal/politica-privacidad.md) · [términos y condiciones](docs/legal/terminos-y-condiciones.md) |
 
 ---
 
 ## Cómo ejecutarlo
 
+### Solo la SPA (lo más rápido: no necesita base de datos)
+
 ```bash
 npm install
 npm run dev      # http://localhost:5173
 npm run build    # build de producción
+npm test         # 214 pruebas unitarias
+```
+
+### Todo el sistema (SPA + API + PostgreSQL)
+
+Requisitos: **Node 24** (ver `.nvmrc`) y **Docker** para la base de datos.
+
+```bash
+npm install
+cp .env.example .env.development      # y ajusta lo que haga falta
+npm run db:up                         # PostgreSQL 16 en el puerto 5433
+npm run db:migrate                    # aplica las migraciones
+npm run db:seed                       # datos de demostración
+npm run dev:all                       # API en :4000 + SPA en :5173
+```
+
+| Comando | Qué hace |
+|---|---|
+| `npm run dev` | Solo la SPA |
+| `npm run dev:api` | Solo la API |
+| `npm run dev:all` | Levanta la base y ambas aplicaciones |
+| `npm run db:up` · `db:down` | PostgreSQL en Docker |
+| `npm run db:migrate` · `db:deploy` · `db:reset` | Migraciones (desarrollo · producción · reinicio) |
+| `npm run db:seed` · `db:studio` | Datos de demo · explorador visual |
+| `npm run db:backup` · `db:restore` | Respaldo y restauración ([runbook](docs/runbooks/backup-recovery.md)) |
+| `npm run docs:openapi` · `docs:openapi:check` | Exporta la especificación · verifica que no haya deriva |
+| `npm run typecheck` · `lint` | TypeScript de front y API · oxlint |
+
+Con la API en marcha, la documentación interactiva queda en
+**http://localhost:4000/api/docs** y el estado del servicio en
+**http://localhost:4000/api/health**.
+
+### Configuración por ambiente
+
+Nunca se versiona un `.env` real: solo los `*.example`.
+
+| Archivo | Para qué |
+|---|---|
+| `.env.example` | Referencia completa de **todas** las variables, comentadas |
+| `.env.development.example` | Plantilla de desarrollo local |
+| `.env.production.example` | Plantilla de producción |
+
+El orden de carga es `.env.<NODE_ENV>.local` → `.env.<NODE_ENV>` → `.env.local` → `.env`
+(lo específico gana). `server/src/config/env.ts` valida todo con Zod: **si falta
+una variable obligatoria, el proceso no arranca**. En producción,
+`assertProductionSafety()` además rechaza configuraciones inseguras (cuentas de
+demo activas, cookies sin `Secure`, pasarela en modo simulado…).
+
+### Trabajo en equipo
+
+| | |
+|---|---|
+| Rama estable | `main` |
+| Rama de integración | `develop` ← **de aquí salen las ramas de trabajo** |
+| Ramas de trabajo | `feat/…`, `fix/…`, `docs/…`, `chore/…` |
+| Commits | [Conventional Commits](https://www.conventionalcommits.org/es/v1.0.0/): `feat(inventario): …` |
+| Pull requests | Usan [la plantilla](.github/PULL_REQUEST_TEMPLATE.md); van de la rama de trabajo a `develop` |
+| CI | Lint, typecheck, pruebas y build en cada push y PR ([workflow](.github/workflows/ci.yml)) |
+
+Antes de abrir un PR:
+
+```bash
+npm run lint && npm run typecheck && npm test
+npm run test:api     # si tocaste server/
+npm run test:qa      # si tocaste pantallas o flujos
 ```
 
 ## Cuentas de demostración
@@ -126,7 +222,33 @@ src/
 └── pages/                    landing, login, admin/, client/, super/
 ```
 
-**Stack:** React 19 · TypeScript (strict) · Tailwind CSS · React Router · Recharts · lucide-react · Vite.
+### API (`server/`)
+
+```
+server/
+├── prisma/
+│   ├── schema.prisma         27 modelos · 22 enums · PostgreSQL
+│   ├── migrations/           Migraciones versionadas
+│   └── seed.ts               Datos de demostración
+└── src/
+    ├── app.ts                Fábrica de Express (se exporta sin arrancar: las pruebas la montan)
+    ├── index.ts              Arranque del servidor
+    ├── scheduler.ts          Trabajos periódicos: expirar órdenes, recalcular riesgo, limpieza
+    ├── openapi.ts            Especificación OpenAPI 3.1 (servida en /api/docs)
+    ├── config/env.ts         Configuración validada con Zod + barreras de producción
+    ├── domain/
+    │   ├── risk.ts           Risk Score y recomendaciones (equivalente de src/lib/ai.ts)
+    │   └── serialize.ts      DTOs: qué sale de la API y qué nunca sale
+    ├── lib/                  crypto · password · audit · mailer · retry · logger · http · errors
+    ├── middleware/           auth · rbac · tenancy · csrf · rateLimit · idempotency · error
+    └── modules/              15 módulos de dominio: <dominio>/{routes,service,schemas}.ts
+```
+
+**Stack del frontend:** React 19 · TypeScript (strict) · Tailwind CSS · React Router · Recharts · lucide-react · Vite.
+**Stack de la API:** Node 24 · Express 5 · Prisma 6 · PostgreSQL 16 · Zod · Argon2id · Helmet · Pino.
+**Pruebas:** Vitest + Testing Library · supertest · Playwright · autocannon (y k6 opcional).
+
+Justificación de cada elección y lo que se descartó: [`docs/arquitectura/stack.md`](docs/arquitectura/stack.md).
 
 ### Las 14 pantallas principales
 
@@ -139,6 +261,29 @@ src/
 Extras: inicio del cliente (`/tienda`), perfil del cliente, establecimientos y publicaciones del superadmin.
 
 ---
+
+## Pruebas
+
+Tres niveles, uno por comando. Detalles en [docs/TESTING.md](docs/TESTING.md) y
+el plan de QA con los hallazgos abiertos en [docs/QA-PLAN.md](docs/QA-PLAN.md).
+
+```bash
+npm test                # 214 pruebas unitarias (motor de IA, métricas, store, hooks, consentimiento)
+npm run test:coverage   # con cobertura: 98 % de líneas en la capa lógica
+npm run test:qa         # 154 pruebas end-to-end en Chrome y móvil (Playwright)
+npm run test:load       # presupuestos de rendimiento del motor con 10.000 productos
+npm run test:load:http  # carga HTTP sobre el build de producción
+npm run test:all        # los tres niveles en secuencia
+```
+
+| Nivel | Qué cubre |
+|---|---|
+| Unitarias | Risk Score y recomendaciones, métricas de impacto, formato COP/fechas, persistencia, resembrado y reanclaje de la demo, registro de habeas data, store completo, hooks e integridad de los datos semilla |
+| QA | Gate legal, acceso por rol, flujo del administrador (alertas → explicabilidad → publicar), compra y reserva del cliente, panel del superadmin, recargas y enlaces profundos, uso en móvil |
+| Carga | Coste del motor con inventarios grandes (el Risk Score se recalcula en cada render) y entrega HTTP de la SPA |
+
+`npm test` corre en ~2 s, así que sirve en modo vigilancia mientras se programa:
+`npm run test:watch`.
 
 ## Identidad visual
 

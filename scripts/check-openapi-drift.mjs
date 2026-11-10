@@ -11,7 +11,7 @@
  * desarrollo), añádelo a ALLOWED_UNDOCUMENTED con el motivo.
  */
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
+import { resolve } from 'node:path';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const MODULES = resolve(ROOT, 'server/src/modules');

@@ -21,7 +21,7 @@ test.describe('panel del establecimiento', () => {
     for (const [etiqueta, encabezado] of [
       ['Inventario', 'Inventario'],
       ['Alertas IA', 'Alertas inteligentes'],
-      ['Marketplace', /Marketplace|Publicaciones/],
+      ['Marketplace', 'Mis publicaciones'],
       ['Impacto', 'Impacto de Reverde'],
     ] as const) {
       // En escritorio es la barra lateral; en móvil la barra inferior.

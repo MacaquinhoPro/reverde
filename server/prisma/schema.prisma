@@ -547,6 +547,13 @@ model Order {
   cancelledAt       DateTime?
   /// Clave de idempotencia del cliente para no duplicar órdenes.
   idempotencyKey    String?           @unique
+  /// Prueba de la autorización de tratamiento de datos que la persona dio al
+  /// confirmar el pedido (Ley 1581 de 2012): versión del documento aceptado,
+  /// momento exacto y finalidad concreta. Es un dato que hay que poder
+  /// mostrar de vuelta, así que no se hashea.
+  consentVersion    String?
+  consentAcceptedAt DateTime?
+  consentPurpose    String?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 

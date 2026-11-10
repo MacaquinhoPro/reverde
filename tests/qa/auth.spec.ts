@@ -12,7 +12,15 @@ test.describe('acceso y protección de rutas', () => {
       test(`entrar como ${role} lleva a ${cuenta.home}`, async ({ page }) => {
         await entrarComo(page, role as keyof typeof CUENTAS);
         await expect(page).toHaveURL(new RegExp(cuenta.home));
-        await expect(page.getByText(cuenta.nombre.split(' ')[0]).first()).toBeVisible();
+
+        // El nombre se muestra en la barra lateral (escritorio) o tras el
+        // avatar (móvil), así que se comprueba que esté en la página y que la
+        // sesión guardada sea la de esa cuenta.
+        await expect(page.getByText(cuenta.nombre.split(' ')[0]).first()).toBeAttached();
+        const sesion = await page.evaluate(() =>
+          JSON.parse(window.localStorage.getItem('reverde.v1.user') ?? 'null'),
+        );
+        expect(sesion).toMatchObject({ email: cuenta.email, name: cuenta.nombre });
       });
     }
   });

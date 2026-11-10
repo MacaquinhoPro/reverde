@@ -6,7 +6,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../../lib/prisma.ts';
 import { asyncHandler, ok, paginationSchema, query, skipTake, validate } from '../../lib/http.ts';
-import { availableOf, productDTO, riskInputOf, saleDTO } from '../../domain/serialize.ts';
+import { availableOf, productDTO, promoOutcomeDTO, riskInputOf, saleDTO } from '../../domain/serialize.ts';
 import { co2FromKg, computeRisk, finalPrice, waterFromKg } from '../../domain/risk.ts';
 import { requireAuth } from '../../middleware/auth.ts';
 import { requirePermission } from '../../middleware/rbac.ts';
@@ -252,6 +252,25 @@ dashboardRouter.get(
         },
       },
     });
+  }),
+);
+
+/**
+ * Memoria de promociones del establecimiento. La consume el motor de
+ * recomendaciones del frontend para el «basándonos en resultados anteriores».
+ */
+dashboardRouter.get(
+  '/promo-outcomes',
+  requirePermission('dashboard:read'),
+  validate({ query: z.object({ establishmentId: z.string().uuid().optional() }) }),
+  resolveEstablishment,
+  asyncHandler(async (req, res) => {
+    const rows = await prisma.promoOutcome.findMany({
+      where: { OR: [{ establishmentId: req.establishmentId! }, { isSeed: true }] },
+      orderBy: { occurredAt: 'desc' },
+      take: 300,
+    });
+    return ok(res, rows.map(promoOutcomeDTO));
   }),
 );
 

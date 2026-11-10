@@ -53,8 +53,10 @@ describe('autenticación simulada', () => {
 describe('inventario', () => {
   it('registra un producto con id propio y lo deja de primero', () => {
     const { api } = renderApi({ products: [makeProduct({ name: 'Anterior' })] });
+    const { id: _sinId, ...nuevo } = makeProduct({ name: 'Nuevo', createdBy: 'user' });
+    void _sinId;
     let creado: Product;
-    act(() => { creado = api().addProduct({ ...makeProduct({ name: 'Nuevo', createdBy: 'user' }), id: undefined as unknown as string }); });
+    act(() => { creado = api().addProduct(nuevo); });
     expect(creado!.id).toMatch(/^p_/);
     expect(api().products[0].name).toBe('Nuevo');
     expect(api().products).toHaveLength(2);

@@ -8,6 +8,7 @@
 import nodemailer, { type Transporter } from 'nodemailer';
 import { env } from '../config/env.ts';
 import { logger } from './logger.ts';
+import { withRetry } from './retry.ts';
 
 let transporter: Transporter | null = null;
 
@@ -35,7 +36,14 @@ export const sentMails: Mail[] = [];
 
 export async function sendMail(mail: Mail): Promise<void> {
   if (env.MAIL_TRANSPORT === 'smtp') {
-    await smtp().sendMail({ from: env.MAIL_FROM, ...mail });
+    // Un SMTP que no responde es el caso transitorio típico. Reintentar el
+    // envío puede duplicar el correo, pero es preferible a perder un enlace
+    // de verificación o de restablecimiento: sin él la persona queda bloqueada.
+    await withRetry(() => smtp().sendMail({ from: env.MAIL_FROM, ...mail }), {
+      operation: 'smtp.sendMail',
+      attempts: 3,
+      baseDelayMs: 500,
+    });
     logger.info({ to: mail.to, subject: mail.subject }, 'correo enviado');
     return;
   }
