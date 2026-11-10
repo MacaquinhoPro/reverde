@@ -71,3 +71,55 @@ describe('resetAll', () => {
     spy.mockRestore();
   });
 });
+
+/**
+ * Regresión del hallazgo H-1 (docs/QA-PLAN.md): un valor del tipo equivocado
+ * en `localStorage` dejaba la aplicación en blanco. El almacenamiento del
+ * navegador es una entrada que no controlamos, así que `load` valida la forma
+ * de lo leído y no solo que el JSON parsee.
+ */
+describe('load · tolerancia a valores con la forma equivocada (H-1)', () => {
+  it('devuelve el valor por defecto si hay null guardado donde se espera una lista', () => {
+    localStorage.setItem('reverde.v1.cart', 'null');
+    expect(load('cart', [])).toEqual([]);
+  });
+
+  it('conserva el null guardado a propósito en un valor que no es lista (cerrar sesión)', () => {
+    localStorage.setItem('reverde.v1.user', 'null');
+    expect(load<unknown>('user', null)).toBeNull();
+    // Incluso con un valor por defecto no nulo: revivir una sesión cerrada
+    // sería peor que el error que se quiere evitar.
+    expect(load<unknown>('user', { id: 'u-1' })).toBeNull();
+  });
+
+  it('devuelve el valor por defecto si hay un objeto donde se espera una lista', () => {
+    localStorage.setItem('reverde.v1.products', '{"roto":true}');
+    expect(load('products', [])).toEqual([]);
+  });
+
+  it('devuelve el valor por defecto si hay una lista donde se espera un objeto', () => {
+    localStorage.setItem('reverde.v1.session', '[1,2,3]');
+    expect(load('session', { id: 'x' })).toEqual({ id: 'x' });
+  });
+
+  it('devuelve el valor por defecto si hay un número o un texto donde se espera un objeto', () => {
+    localStorage.setItem('reverde.v1.session', '42');
+    expect(load('session', { id: 'x' })).toEqual({ id: 'x' });
+    localStorage.setItem('reverde.v1.session', '"hola"');
+    expect(load('session', { id: 'x' })).toEqual({ id: 'x' });
+  });
+
+  it('sigue devolviendo los valores primitivos válidos', () => {
+    save('contador', 7);
+    expect(load('contador', 0)).toBe(7);
+    save('bandera', false);
+    expect(load('bandera', true)).toBe(false);
+    save('texto', 'hola');
+    expect(load('texto', '')).toBe('hola');
+  });
+
+  it('devuelve las listas y objetos válidos sin tocarlos', () => {
+    save('cart', [{ productId: 'p1', quantity: 2 }]);
+    expect(load('cart', [])).toEqual([{ productId: 'p1', quantity: 2 }]);
+  });
+});

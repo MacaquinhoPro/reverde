@@ -50,7 +50,7 @@ Todo el plan de trabajo está documentado en [`docs/`](docs/). Punto de entrada:
 npm install
 npm run dev      # http://localhost:5173
 npm run build    # build de producción
-npm test         # 214 pruebas unitarias
+npm test         # 221 pruebas unitarias
 ```
 
 ### Todo el sistema (SPA + API + PostgreSQL)
@@ -268,9 +268,10 @@ Tres niveles, uno por comando. Detalles en [docs/TESTING.md](docs/TESTING.md) y
 el plan de QA con los hallazgos abiertos en [docs/QA-PLAN.md](docs/QA-PLAN.md).
 
 ```bash
-npm test                # 214 pruebas unitarias (motor de IA, métricas, store, hooks, consentimiento)
+npm test                # 221 pruebas unitarias (motor de IA, métricas, store, hooks, consentimiento)
 npm run test:coverage   # con cobertura: 98 % de líneas en la capa lógica
-npm run test:qa         # 154 pruebas end-to-end en Chrome y móvil (Playwright)
+npm run test:qa         # 158 pruebas end-to-end en Chromium y Android
+npm run test:qa:all     # 474: los 3 motores (Chromium, Firefox, WebKit) y 3 perfiles móviles
 npm run test:load       # presupuestos de rendimiento del motor con 10.000 productos
 npm run test:load:http  # carga HTTP sobre el build de producción
 npm run test:all        # los tres niveles en secuencia

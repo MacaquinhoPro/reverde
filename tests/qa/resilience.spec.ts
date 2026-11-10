@@ -60,23 +60,16 @@ test.describe('persistencia y enlaces profundos', () => {
   });
 
   /**
-   * DEFECTO ABIERTO (ver docs/QA-PLAN.md → Hallazgos).
+   * Regresión del hallazgo H-1 (docs/QA-PLAN.md), ya corregido.
    *
-   * `load()` en src/lib/storage.ts solo cae al valor por defecto cuando la
-   * clave no existe o el JSON no se puede parsear. Si el valor guardado es el
-   * literal `null` —válido para `user`, pero no para las listas— lo devuelve
-   * tal cual, y `cart.reduce(...)` en `cartCount` lanza
-   * «Cannot read properties of null (reading 'reduce')»: pantalla en blanco.
+   * `null` guardado donde se espera una lista es JSON válido, así que `load()`
+   * lo devolvía tal cual y `cart.reduce(...)` en `cartCount` lanzaba
+   * «Cannot read properties of null (reading 'reduce')»: pantalla en blanco,
+   * sin forma de recuperarse salvo limpiar el almacenamiento a mano.
    *
-   * Arreglo sugerido en `load`: devolver `fallback` cuando el valor parseado
-   * no tenga la forma esperada, p. ej.
-   *   `return parsed === null && fallback !== null ? fallback : parsed;`
-   *
-   * La prueba está marcada como fallo esperado: cuando se corrija empezará a
-   * pasar y Playwright avisará para quitar la anotación.
+   * `load()` valida ahora la forma de lo leído, no solo que el JSON parsee.
    */
   test('un valor null en una lista de localStorage no debe tumbar la app', async ({ page }) => {
-    test.fail();
     await page.goto('/');
     await page.evaluate(() => window.localStorage.setItem('reverde.v1.cart', 'null'));
     await page.goto('/tienda/explorar');

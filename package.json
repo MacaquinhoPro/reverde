@@ -15,7 +15,7 @@
     "test:unit": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:qa": "playwright test",
+    "test:qa": "playwright test --project=escritorio-chromium --project=móvil-android",
     "test:qa:ui": "playwright test --ui",
     "test:qa:report": "playwright show-report",
     "test:load": "vitest run --config vitest.load.config.ts",
@@ -34,7 +34,10 @@
     "db:backup": "bash scripts/db-backup.sh",
     "db:restore": "bash scripts/db-restore.sh",
     "docs:openapi": "tsx scripts/export-openapi.ts",
-    "docs:openapi:check": "node scripts/check-openapi-drift.mjs"
+    "docs:openapi:check": "node scripts/check-openapi-drift.mjs",
+    "test:api:unit": "npm run test:unit -w @reverde/server",
+    "test:api:coverage": "npm run test:unit:coverage -w @reverde/server",
+    "test:qa:all": "playwright test"
   },
   "dependencies": {
     "lucide-react": "^1.47.0",

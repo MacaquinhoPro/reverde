@@ -33,9 +33,42 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
 
+  /**
+   * Seis proyectos: los tres motores de navegador (Chromium, Firefox, WebKit)
+   * en escritorio, y tres perfiles móviles reales.
+   *
+   * El motor importa más que la marca: Edge, Brave y Chrome comparten
+   * Chromium, y Safari —el navegador de todo iPhone— es WebKit. Probar los
+   * tres motores cubre el parque real sin multiplicar las corridas.
+   *
+   * Por defecto se corren los proyectos rápidos. Para la matriz completa:
+   *   npm run test:qa:all                         (los seis)
+   *   npx playwright test --project=webkit        (uno solo)
+   *
+   * Los navegadores se instalan una vez con: npx playwright install
+   */
   projects: [
-    { name: 'escritorio', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
-    { name: 'móvil', use: { ...devices['Pixel 7'] } },
+    // ── Escritorio: un proyecto por motor ───────────────────────────────
+    {
+      name: 'escritorio-chromium',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
+    },
+    {
+      name: 'escritorio-firefox',
+      use: { ...devices['Desktop Firefox'], viewport: { width: 1440, height: 900 } },
+    },
+    {
+      name: 'escritorio-webkit',
+      use: { ...devices['Desktop Safari'], viewport: { width: 1440, height: 900 } },
+    },
+    // ── Móvil: el cliente usa la tienda casi solo desde el teléfono ─────
+    { name: 'móvil-android', use: { ...devices['Pixel 7'] } },
+    { name: 'móvil-ios', use: { ...devices['iPhone 14'] } },
+    // Pantalla pequeña: el peor caso de layout que hay que soportar.
+    {
+      name: 'móvil-pequeño',
+      use: { ...devices['Galaxy S9+'], viewport: { width: 360, height: 640 } },
+    },
   ],
 
   // Contra un despliegue externo no se levanta nada local.

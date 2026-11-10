@@ -12,7 +12,7 @@ las de carga miden los límites de escala del cliente y de la entrega estática.
 | Carga | Coste del motor con inventarios grandes; entrega HTTP del build | Vitest + autocannon (+ k6 opcional) | `npm run test:load` · `npm run test:load:http` |
 
 ```bash
-npm test                      # 215 pruebas unitarias
+npm test                      # 221 pruebas unitarias del frontend
 npm run test:coverage         # con reporte de cobertura (umbral 80 % líneas)
 npm run test:qa               # QA en escritorio y móvil
 npm run test:load             # presupuestos de rendimiento del motor
@@ -121,6 +121,9 @@ npm run test:load:http:smoke                               # 5 s por escenario
 node tests/load/http-load.mjs --duration 30 --connections 100
 node tests/load/http-load.mjs --url https://reverde.vercel.app
 ```
+
+Escenarios, umbrales y **registro de corridas** con las cifras medidas:
+[`qa/carga.md`](./qa/carga.md).
 
 **k6 (opcional).** `tests/load/k6-marketplace.js` ofrece perfiles de humo,
 carga, pico y estrés con umbrales declarados, para quien tenga k6 instalado:

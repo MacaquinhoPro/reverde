@@ -20,5 +20,21 @@ export default defineConfig({
      * NODE_ENV=test.
      */
     env: TEST_ENV,
+    coverage: {
+      provider: 'v8',
+      reportsDirectory: '../coverage/api',
+      reporter: ['text', 'html', 'lcov'],
+      include: ['src/domain/**', 'src/lib/**', 'src/middleware/**', 'src/modules/**'],
+      exclude: ['src/modules/dev.ts', 'src/openapi.ts'],
+      /**
+       * Sin umbral obligatorio todavía, a propósito: esta suite necesita
+       * PostgreSQL, así que su cobertura solo se puede medir donde haya base de
+       * datos (la CI). El umbral que SÍ bloquea está en `vitest.unit.config.ts`
+       * (lógica pura de la API) y en el `vitest.config.ts` de la raíz
+       * (frontend). Cuando la CI haya reportado una cifra estable varias veces,
+       * fijar aquí el umbral en ese valor menos un margen.
+       * Ver docs/qa/interfaz.md § cobertura.
+       */
+    },
   },
 });

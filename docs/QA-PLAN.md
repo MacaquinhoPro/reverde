@@ -1,7 +1,8 @@
 # Plan de QA · Reverde
 
 Qué se prueba, cómo se prueba y qué quedó abierto. La parte automatizada vive
-en `tests/qa` (Playwright, 154 casos entre escritorio y móvil); la lista de
+en `tests/qa` (Playwright, **474 casos**: 79 por cada uno de los 6 proyectos de
+navegador/dispositivo); la lista de
 verificación manual al final es para la sustentación, donde hay que mirar cosas
 que una aserción no juzga bien: que las cifras resulten creíbles, que las
 gráficas se lean y que el relato se sostenga.
@@ -25,10 +26,21 @@ Ejecución: `npm run test:qa` · reporte: `npm run test:qa:report` · detalles e
 | Persistencia y recargas | La demo se pierde a media sustentación | `resilience.spec.ts` |
 | Uso en móvil | La demo no se puede mostrar desde un teléfono | proyecto `móvil` |
 
-Fuera de alcance, y por qué: no hay pruebas de pasarela de pago (es simulada y
-no toca ningún proveedor), ni de API (el backend en `server/` todavía no tiene
-código), ni auditoría de accesibilidad completa —solo las comprobaciones
-puntuales que aparecen abajo.
+Fuera de alcance de **esta** suite, y por qué:
+
+- **La API.** No porque falte: `server/` tiene 86 endpoints y 10 archivos de
+  pruebas de integración con supertest (`npm run test:api`). Lo que pasa es que
+  **la SPA no la consume todavía** (Must-have M14), así que las pruebas de QA
+  recorren la aplicación con `localStorage` y no pueden ejercitar la API. Al
+  cerrar M14 hay que reescribir `tests/qa/fixtures.ts` contra la API real.
+- **La pasarela de pago**, en esta suite: el checkout de la SPA es simulado. El
+  flujo real de pago —incluido webhook duplicado y firma inválida— sí se prueba,
+  en `server/src/tests/payments.test.ts` contra el adaptador `mock`.
+- **Auditoría de accesibilidad completa.** Solo hay comprobaciones puntuales;
+  ver [`qa/interfaz.md`](./qa/interfaz.md) § 3.8 y el pendiente Q2.
+
+Cobertura cross-browser, cobertura de código y checklist manual:
+[`qa/interfaz.md`](./qa/interfaz.md). Carga: [`qa/carga.md`](./qa/carga.md).
 
 ---
 
@@ -141,30 +153,37 @@ puntuales que aparecen abajo.
 
 ## Hallazgos abiertos
 
-### H-1 · `null` en una lista de `localStorage` deja la app en blanco · **alto**
+### H-1 · `null` en una lista de `localStorage` deja la app en blanco · **alto** · ✅ CORREGIDO (9 nov 2026)
 
-`load()` en `src/lib/storage.ts` solo cae al valor por defecto si la clave no
-existe o el JSON no se puede parsear. Si el valor guardado es el literal
-`null` —válido para `user`, no para las listas—, lo devuelve tal cual:
+`load()` en `src/lib/storage.ts` solo caía al valor por defecto si la clave no
+existía o el JSON no se podía parsear. Si el valor guardado era el literal
+`null` —válido para `user`, no para las listas—, lo devolvía tal cual:
 
 ```js
 localStorage.setItem('reverde.v1.cart', 'null');
-// → load('cart', []) devuelve null
-// → cartCount: cart.reduce(...) lanza
+// → load('cart', []) devolvía null
+// → cartCount: cart.reduce(...) lanzaba
 //   TypeError: Cannot read properties of null (reading 'reduce')
 ```
 
 Resultado: pantalla en blanco, sin forma de recuperarse salvo limpiar el
-almacenamiento a mano. Cubierto por el caso 6.7, marcado `test.fail()`: cuando
-se corrija, la prueba empezará a pasar y Playwright avisará para quitar la
-anotación.
+almacenamiento a mano.
 
-Arreglo sugerido, en `load`:
+**Corrección.** `load()` valida ahora el **tipo de contenedor** de lo leído, no
+solo que el JSON parsee: una lista debe seguir siendo una lista, y un objeto un
+objeto.
 
-```ts
-const parsed = JSON.parse(raw) as T;
-return parsed === null && fallback !== null ? fallback : parsed;
-```
+El arreglo que sugería originalmente este documento
+(`parsed === null && fallback !== null ? fallback : parsed`) **habría rompido la
+prueba «respeta los valores vacíos legítimos»**: un `null` guardado a propósito
+en un valor que no es lista es la forma de cerrar la sesión (`save('user', null)`),
+y devolver ahí el valor por defecto reviviría una sesión ya cerrada. Por eso la
+comprobación final distingue listas de no-listas en vez de preguntar solo si el
+valor es `null`.
+
+Regresión cubierta por 7 pruebas unitarias nuevas en `tests/unit/storage.test.ts`
+y por el caso 6.7 de `tests/qa/resilience.spec.ts`, al que se le quitó la
+anotación `test.fail()`.
 
 ### H-2 · Los campos de texto no tienen etiqueta asociada · **medio** (accesibilidad)
 
