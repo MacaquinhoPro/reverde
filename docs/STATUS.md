@@ -17,6 +17,10 @@ Estado real de los hitos, con evidencia verificable. **Ningún hito figura como
 > guion de la demo paso a paso, cómo defender cada hito y respuestas a las
 > preguntas difíciles.
 
+> La columna «Qué falta» de este documento está desarrollada, priorizada y con
+> identificadores estables en [`PENDIENTES.md`](./PENDIENTES.md), que además
+> escribe las 6 decisiones que aquí se citan como «pregunta N».
+
 ## Verificación ejecutada hoy
 
 | Comprobación | Comando | Resultado |

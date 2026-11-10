@@ -29,7 +29,10 @@ const salida = join(raiz, 'docs/pdf');
 /* ───────────────────────── Orden del compendio ─────────────────────────── */
 /** Las fases son las del plan de trabajo; el README las lista igual. */
 const fases = [
-  { fase: 'Resumen', docs: ['README.md', 'docs/STATUS.md', 'docs/SUSTENTACION.md'] },
+  {
+    fase: 'Resumen',
+    docs: ['README.md', 'docs/STATUS.md', 'docs/PENDIENTES.md', 'docs/SUSTENTACION.md'],
+  },
   {
     fase: 'Estrategia',
     docs: [

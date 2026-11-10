@@ -27,9 +27,11 @@ entrenado, y la pasarela de pago corre por defecto en modo simulado.
 
 ## Documentación
 
-Todo el plan de trabajo está documentado en [`docs/`](docs/). Dos puntos de entrada:
+Todo el plan de trabajo está documentado en [`docs/`](docs/). Tres puntos de entrada:
 
 - **[`docs/STATUS.md`](docs/STATUS.md)** — estado real de los 23 hitos con su evidencia.
+- **[`docs/PENDIENTES.md`](docs/PENDIENTES.md)** — lo que falta: 84 renglones con
+  severidad, las 6 decisiones que bloquean y la ruta más corta para cerrarlos.
 - **[`docs/SUSTENTACION.md`](docs/SUSTENTACION.md)** — guía de sustentación: qué
   tiene la app, el guion de la demo paso a paso y dónde está cada cosa.
 
