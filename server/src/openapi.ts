@@ -412,6 +412,16 @@ encabezado \`Idempotency-Key\`: repetir la clave devuelve la respuesta original.
     '/api/products/{id}/discount': {
       post: { ...op('Products', 'Aplicar un descuento'), parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }] },
     },
+    '/api/products/meta/categories': {
+      get: {
+        ...op('Products', 'Categorías admitidas para el catálogo'),
+        description: 'Lista fija que alimenta los selectores de categoría. No depende del establecimiento.',
+        responses: {
+          200: wrapped({ type: 'object', properties: { categories: { type: 'array', items: { type: 'string' } } } }),
+          default: errorResponse,
+        },
+      },
+    },
 
     '/api/inventory/summary': { get: op('Inventory', 'Resumen de existencias y valor en riesgo') },
     '/api/inventory/expiring': {
@@ -557,6 +567,15 @@ encabezado \`Idempotency-Key\`: repetir la clave devuelve la respuesta original.
     '/api/dashboard/overview': { get: op('Dashboard', 'KPIs, comparativa y series del establecimiento') },
     '/api/dashboard/priority': { get: op('Dashboard', 'Productos priorizados por riesgo') },
     '/api/dashboard/sales': { get: { ...op('Dashboard', 'Historial de ventas'), parameters: pagination, responses: { 200: list(ref('Sale')), default: errorResponse } } },
+    '/api/dashboard/promo-outcomes': {
+      get: {
+        ...op('Dashboard', 'Resultados de promociones anteriores'),
+        description:
+          'Memoria de aprendizaje del motor de recomendaciones: qué descuento logró qué porcentaje de venta ' +
+          'en cada categoría y en cuántos días. Incluye los datos semilla.',
+        parameters: [{ name: 'establishmentId', in: 'query', schema: { type: 'string', format: 'uuid' } }],
+      },
+    },
     '/api/dashboard/me': { get: op('Dashboard', 'Mi ahorro e impacto como compradora') },
 
     '/api/admin/overview': { get: op('Admin', 'Resumen global de la plataforma') },
@@ -581,6 +600,13 @@ encabezado \`Idempotency-Key\`: repetir la clave devuelve la respuesta original.
     '/api/admin/payment-events': { get: { ...op('Admin', 'Eventos de pasarela recientes'), parameters: pagination } },
 
     '/api/notifications': { get: { ...op('Admin', 'Mis notificaciones'), parameters: pagination } },
+    '/api/notifications/{id}/read': {
+      post: {
+        ...op('Admin', 'Marcar una notificación como leída'),
+        description: 'Solo surte efecto sobre notificaciones propias o del establecimiento de la sesión.',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+      },
+    },
     '/api/notifications/read-all': { post: op('Admin', 'Marcar todas como leídas') },
   },
 } as const;

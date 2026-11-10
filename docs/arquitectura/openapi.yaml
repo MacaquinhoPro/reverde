@@ -1,0 +1,2305 @@
+# Generado por `npm run docs:openapi` desde server/src/openapi.ts.
+# No editar a mano: los cambios se pierden en la siguiente generación.
+openapi: 3.1.0
+info:
+  title: API de Reverde
+  version: 1.0.0
+  description: |-
+    API de Reverde: inventario inteligente y marketplace de rescate de alimentos.
+
+    **Autenticación.** Cookie de sesión `rv_session` (HttpOnly). Toda
+    petición que modifique datos debe repetir el valor de la cookie
+    `rv_csrf` en el encabezado `x-csrf-token`.
+
+    **Aislamiento.** Los endpoints de establecimiento resuelven el establecimiento
+    desde la sesión. Solo el rol `superadmin` puede indicar `establishmentId`.
+
+    **Dinero.** Los precios van en pesos colombianos enteros. Los montos que viajan
+    a la pasarela van en centavos (`amountInCents`).
+
+    **Idempotencia.** `POST /orders` y `POST /orders/{id}/checkout` aceptan el
+    encabezado `Idempotency-Key`: repetir la clave devuelve la respuesta original.
+servers:
+  - url: http://localhost:4000
+    description: development
+tags:
+  - name: Auth
+    description: Registro, sesión, verificación y contraseñas
+  - name: Users
+    description: Perfil y administración de personas
+  - name: Establishments
+    description: Establecimientos y sus administradores
+  - name: Products
+    description: Catálogo de inventario por establecimiento
+  - name: Inventory
+    description: Existencias, movimientos y vencimientos
+  - name: Alerts
+    description: Alertas de vencimiento
+  - name: Recommendations
+    description: Recomendaciones del motor de riesgo
+  - name: Marketplace
+    description: Catálogo público y publicaciones
+  - name: Cart
+    description: Carrito de compras
+  - name: Orders
+    description: Pedidos
+  - name: Payments
+    description: Checkout, estado y webhooks
+  - name: Dashboard
+    description: Métricas e impacto
+  - name: Admin
+    description: Administración de la plataforma
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: rv_session
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          type: string
+          enum:
+            - cliente
+            - supermercado
+            - restaurante
+            - superadmin
+        status:
+          type: string
+          enum:
+            - activo
+            - pendiente
+            - suspendido
+        establishmentId:
+          type: string
+          format: uuid
+          nullable: true
+        avatarHue:
+          type: integer
+        emailVerified:
+          type: boolean
+    Risk:
+      type: object
+      description: Risk Score explicable del producto
+      properties:
+        score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        level:
+          type: string
+          enum:
+            - bajo
+            - medio
+            - alto
+        daysLeft:
+          type: integer
+        wasteProbability:
+          type: integer
+        coverageDays:
+          type: number
+        factors:
+          type: array
+          items:
+            type: object
+            properties:
+              label:
+                type: string
+              detail:
+                type: string
+              weight:
+                type: integer
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        emoji:
+          type: string
+        photo:
+          type: string
+          nullable: true
+        quantity:
+          type: integer
+          description: Stock vendible (físico menos reservado)
+        onHandQuantity:
+          type: integer
+        reservedQuantity:
+          type: integer
+        unit:
+          type: string
+          enum:
+            - unidad
+            - kg
+            - g
+            - litro
+            - bandeja
+            - caja
+        weightPerUnitKg:
+          type: number
+        entryDate:
+          type: string
+          format: date-time
+        expiryDate:
+          type: string
+          format: date-time
+        originalPrice:
+          type: integer
+        price:
+          type: integer
+          description: Precio final tras descuento, calculado en el backend
+        discountPercent:
+          type: integer
+        establishmentId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - en_inventario
+            - publicado
+            - agotado
+            - vencido
+            - donado
+        risk:
+          $ref: "#/components/schemas/Risk"
+    Establishment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+            - supermercado
+            - restaurante
+        address:
+          type: string
+        city:
+          type: string
+        schedule:
+          type: string
+        rating:
+          type: number
+        distanceKm:
+          type: number
+        latitude:
+          type: number
+          nullable: true
+        longitude:
+          type: number
+          nullable: true
+        status:
+          type: string
+          enum:
+            - activo
+            - pendiente
+            - suspendido
+    Cart:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        count:
+          type: integer
+        subtotal:
+          type: integer
+        savings:
+          type: integer
+        wasteAvoidedKg:
+          type: number
+        items:
+          type: array
+          items:
+            type: object
+        issues:
+          type: array
+          items:
+            type: object
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        mode:
+          type: string
+          enum:
+            - compra
+            - reserva
+        payment:
+          type: string
+          enum:
+            - tarjeta
+            - pse
+            - nequi
+            - bancolombia
+            - establecimiento
+        status:
+          type: string
+          enum:
+            - confirmado
+            - reservado
+            - entregado
+        paymentStatus:
+          type: string
+          enum:
+            - PENDING_PAYMENT
+            - PAID
+            - FAILED
+            - CANCELLED
+            - EXPIRED
+            - REFUNDED
+        total:
+          type: integer
+        savings:
+          type: integer
+        wasteAvoidedKg:
+          type: number
+        pickupWindow:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+        checkout:
+          type: object
+          nullable: true
+    Alert:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        productId:
+          type: string
+          format: uuid
+        level:
+          type: string
+          enum:
+            - bajo
+            - medio
+            - alto
+        title:
+          type: string
+        body:
+          type: string
+        status:
+          type: string
+          enum:
+            - abierta
+            - silenciada
+            - resuelta
+        riskScore:
+          type: integer
+    Recommendation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        productId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        rationale:
+          type: string
+        learningNote:
+          type: string
+          nullable: true
+        suggestedDiscount:
+          type: integer
+        confidence:
+          type: integer
+        actions:
+          type: array
+          items:
+            type: object
+    Sale:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date-time
+        productName:
+          type: string
+        customer:
+          type: string
+        qty:
+          type: integer
+        soldPrice:
+          type: integer
+        recovered:
+          type: integer
+        wasteAvoidedKg:
+          type: number
+        channel:
+          type: string
+          enum:
+            - marketplace
+            - tienda
+security:
+  - sessionCookie: []
+paths:
+  /api/health:
+    get:
+      tags:
+        - Admin
+      summary: Estado del servicio y de la base de datos
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        "503": &a1
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      details: {}
+  /api/auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Registro de una cuenta real
+      description: "Crea una cuenta de comprador. Con `accountType: establecimiento` además deja una solicitud pendiente de aprobación: el rol NO se otorga aquí."
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 10
+                  description: 10+ caracteres con mayúscula, minúscula y número
+                phone:
+                  type: string
+                accountType:
+                  type: string
+                  enum:
+                    - comprador
+                    - establecimiento
+                  default: comprador
+                establishment:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    type:
+                      type: string
+                      enum:
+                        - supermercado
+                        - restaurante
+                    address:
+                      type: string
+                    city:
+                      type: string
+                    schedule:
+                      type: string
+      responses:
+        "201":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: "#/components/schemas/User"
+        "409": *a1
+        default: *a1
+  /api/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Iniciar sesión
+      description: Entrega las cookies de sesión y de CSRF. Bloquea la cuenta tras varios intentos fallidos.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: "#/components/schemas/User"
+        "401": *a1
+        "429": *a1
+  /api/auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: Cerrar la sesión actual
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+  /api/auth/session:
+    get:
+      tags:
+        - Auth
+      summary: Sesión vigente (y renovación deslizante)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      security: []
+  /api/auth/sessions:
+    get:
+      tags:
+        - Auth
+      summary: Sesiones activas de la cuenta
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+  /api/auth/sessions/{id}:
+    delete:
+      tags:
+        - Auth
+      summary: Revocar una sesión
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/auth/verify-email:
+    post:
+      tags:
+        - Auth
+      summary: Confirmar el correo con el token del enlace
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      security: []
+  /api/auth/verify-email/resend:
+    post:
+      tags:
+        - Auth
+      summary: Reenviar el enlace de confirmación
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+  /api/auth/password/forgot:
+    post:
+      tags:
+        - Auth
+      summary: Pedir enlace de restablecimiento
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      security: []
+  /api/auth/password/reset:
+    post:
+      tags:
+        - Auth
+      summary: Restablecer la contraseña con el token
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      security: []
+  /api/auth/password/change:
+    post:
+      tags:
+        - Auth
+      summary: Cambiar la contraseña estando autenticado
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+  /api/auth/me:
+    get:
+      tags:
+        - Auth
+      summary: Mi perfil
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/User"
+        default: *a1
+    patch:
+      tags:
+        - Auth
+      summary: Actualizar mi perfil
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/User"
+        default: *a1
+  /api/auth/bootstrap-superadmin:
+    post:
+      tags:
+        - Auth
+      summary: Crear el primer superadministrador
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      description: Exige el token SUPERADMIN_BOOTSTRAP_TOKEN y solo funciona si no existe ningún superadministrador. Nunca es alcanzable desde el registro público.
+      security: []
+  /api/users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Ficha de una persona
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/users/me:
+    delete:
+      tags:
+        - Users
+      summary: Eliminar mi cuenta (baja lógica con anonimización)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+  /api/establishments:
+    get:
+      tags:
+        - Establishments
+      summary: Directorio de establecimientos activos
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Establishment"
+                  meta:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      pageSize:
+                        type: integer
+                      total:
+                        type: integer
+                      totalPages:
+                        type: integer
+        default: *a1
+      security: []
+      parameters:
+        - &a2
+          name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - &a3
+          name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum:
+              - supermercado
+              - restaurante
+        - name: city
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+    post:
+      tags:
+        - Establishments
+      summary: Crear un establecimiento (superadmin)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+  /api/establishments/{id}:
+    get:
+      tags:
+        - Establishments
+      summary: Detalle de un establecimiento
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+    patch:
+      tags:
+        - Establishments
+      summary: Editar un establecimiento propio
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/establishments/requests:
+    post:
+      tags:
+        - Establishments
+      summary: Solicitar una cuenta de establecimiento
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+  /api/establishments/requests/mine:
+    get:
+      tags:
+        - Establishments
+      summary: Mis solicitudes
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+  /api/establishments/{id}/members:
+    get:
+      tags:
+        - Establishments
+      summary: Administradores del establecimiento
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+    post:
+      tags:
+        - Establishments
+      summary: Asociar un administrador
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/establishments/{id}/members/{userId}:
+    delete:
+      tags:
+        - Establishments
+      summary: Retirar un administrador
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/products:
+    get:
+      tags:
+        - Products
+      summary: Inventario del establecimiento
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Product"
+                  meta:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      pageSize:
+                        type: integer
+                      total:
+                        type: integer
+                      totalPages:
+                        type: integer
+        default: *a1
+      parameters:
+        - *a2
+        - *a3
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: risk
+          in: query
+          schema:
+            type: string
+            enum:
+              - bajo
+              - medio
+              - alto
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum:
+              - riesgo
+              - vencimiento
+              - nombre
+              - precio
+              - reciente
+        - name: search
+          in: query
+          schema:
+            type: string
+    post:
+      tags:
+        - Products
+      summary: Registrar un producto
+      responses:
+        "201":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Product"
+        default: *a1
+  /api/products/{id}:
+    get:
+      tags:
+        - Products
+      summary: Detalle de un producto propio
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Product"
+        "404": *a1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+    patch:
+      tags:
+        - Products
+      summary: Editar un producto
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+    delete:
+      tags:
+        - Products
+      summary: Retirar un producto (baja lógica)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/products/{id}/discount:
+    post:
+      tags:
+        - Products
+      summary: Aplicar un descuento
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/products/meta/categories:
+    get:
+      tags:
+        - Products
+      summary: Categorías admitidas para el catálogo
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      categories:
+                        type: array
+                        items:
+                          type: string
+        default: *a1
+      description: Lista fija que alimenta los selectores de categoría. No depende del establecimiento.
+  /api/inventory/summary:
+    get:
+      tags:
+        - Inventory
+      summary: Resumen de existencias y valor en riesgo
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+  /api/inventory/expiring:
+    get:
+      tags:
+        - Inventory
+      summary: Productos próximos a vencer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 3
+  /api/inventory/movements:
+    get:
+      tags:
+        - Inventory
+      summary: Kardex de movimientos
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - *a2
+        - *a3
+        - name: productId
+          in: query
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+  /api/inventory/{productId}/adjust:
+    post:
+      tags:
+        - Inventory
+      summary: Ajustar existencias
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/inventory/{productId}/write-off:
+    post:
+      tags:
+        - Inventory
+      summary: Registrar merma
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/alerts:
+    get:
+      tags:
+        - Alerts
+      summary: Alertas de vencimiento (recalcula el Risk Score)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Alert"
+                  meta:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      pageSize:
+                        type: integer
+                      total:
+                        type: integer
+                      totalPages:
+                        type: integer
+        default: *a1
+      parameters:
+        - *a2
+        - *a3
+        - name: level
+          in: query
+          schema:
+            type: string
+            enum:
+              - bajo
+              - medio
+              - alto
+        - name: status
+          in: query
+          schema:
+            type: string
+  /api/alerts/counts:
+    get:
+      tags:
+        - Alerts
+      summary: Conteo de alertas abiertas por nivel
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+  /api/alerts/{id}/snooze:
+    post:
+      tags:
+        - Alerts
+      summary: Silenciar una alerta
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/alerts/{id}/resolve:
+    post:
+      tags:
+        - Alerts
+      summary: Resolver una alerta
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/recommendations:
+    get:
+      tags:
+        - Recommendations
+      summary: Recomendaciones por riesgo de desperdicio
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Recommendation"
+                  meta:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      pageSize:
+                        type: integer
+                      total:
+                        type: integer
+                      totalPages:
+                        type: integer
+        default: *a1
+      parameters: &a4
+        - *a2
+        - *a3
+  /api/recommendations/{productId}:
+    get:
+      tags:
+        - Recommendations
+      summary: Detalle con explicabilidad e histórico
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/recommendations/{productId}/apply:
+    post:
+      tags:
+        - Recommendations
+      summary: Ejecutar la acción recomendada
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      description: "Acciones: descuento, combo, publicar, caja_rescate, destacar, donar, venta_presencial."
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/marketplace:
+    get:
+      tags:
+        - Marketplace
+      summary: Catálogo público de productos publicados
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Product"
+                  meta:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      pageSize:
+                        type: integer
+                      total:
+                        type: integer
+                      totalPages:
+                        type: integer
+        default: *a1
+      security: []
+      parameters:
+        - *a2
+        - *a3
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: establishmentType
+          in: query
+          schema:
+            type: string
+            enum:
+              - todos
+              - supermercado
+              - restaurante
+        - name: maxDistance
+          in: query
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          schema:
+            type: integer
+        - name: minDiscount
+          in: query
+          schema:
+            type: integer
+        - name: expiringSoon
+          in: query
+          schema:
+            type: boolean
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum:
+              - relevancia
+              - descuento
+              - precio
+              - distancia
+              - vencimiento
+  /api/marketplace/products/{id}:
+    get:
+      tags:
+        - Marketplace
+      summary: Ficha pública de un producto
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/marketplace/facets:
+    get:
+      tags:
+        - Marketplace
+      summary: Conteos para los filtros
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      security: []
+  /api/marketplace/listings/{productId}/publish:
+    post:
+      tags:
+        - Marketplace
+      summary: Publicar un producto
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/marketplace/listings/{productId}/unpublish:
+    post:
+      tags:
+        - Marketplace
+      summary: Despublicar un producto
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/cart:
+    get:
+      tags:
+        - Cart
+      summary: Mi carrito con precios recalculados
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Cart"
+        default: *a1
+    delete:
+      tags:
+        - Cart
+      summary: Vaciar el carrito
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Cart"
+        default: *a1
+  /api/cart/items:
+    post:
+      tags:
+        - Cart
+      summary: Agregar un producto
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Cart"
+        default: *a1
+  /api/cart/items/{productId}:
+    patch:
+      tags:
+        - Cart
+      summary: Cambiar la cantidad
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+    delete:
+      tags:
+        - Cart
+      summary: Quitar un producto
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/orders:
+    post:
+      tags:
+        - Orders
+      summary: Crear el pedido desde el carrito
+      responses:
+        "201":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Order"
+        "409": *a1
+        default: *a1
+      description: Calcula los totales desde la base de datos y reserva el inventario de forma atómica. Acepta `Idempotency-Key`.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          schema:
+            type: string
+    get:
+      tags:
+        - Orders
+      summary: Mis pedidos
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Order"
+                  meta:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      pageSize:
+                        type: integer
+                      total:
+                        type: integer
+                      totalPages:
+                        type: integer
+        default: *a1
+      parameters: *a4
+  /api/orders/establishment:
+    get:
+      tags:
+        - Orders
+      summary: Pedidos que llegan a mi establecimiento
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Order"
+                  meta:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      pageSize:
+                        type: integer
+                      total:
+                        type: integer
+                      totalPages:
+                        type: integer
+        default: *a1
+      parameters: *a4
+  /api/orders/admin/all:
+    get:
+      tags:
+        - Orders
+      summary: Todos los pedidos (superadmin)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters: *a4
+  /api/orders/{id}:
+    get:
+      tags:
+        - Orders
+      summary: Detalle de un pedido
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Order"
+        "404": *a1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/orders/{id}/checkout:
+    post:
+      tags:
+        - Orders
+      summary: Iniciar el checkout alojado de la pasarela
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      description: Devuelve `checkoutUrl`. Reverde nunca recibe datos de tarjeta.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          schema:
+            type: string
+  /api/orders/{id}/cancel:
+    post:
+      tags:
+        - Orders
+      summary: Cancelar un pedido pendiente y liberar el stock
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/orders/{id}/deliver:
+    post:
+      tags:
+        - Orders
+      summary: Marcar el pedido como entregado
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/payments/config:
+    get:
+      tags:
+        - Payments
+      summary: Configuración pública de la pasarela
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      security: []
+  /api/payments/status/{orderId}:
+    get:
+      tags:
+        - Payments
+      summary: Estado del pago de un pedido
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      description: Lo consulta el frontend tras volver de la pasarela. La redirección por sí sola no confirma nada.
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/payments/webhook/{provider}:
+    post:
+      tags:
+        - Payments
+      summary: Webhook de la pasarela
+      description: Valida la firma del evento, lo guarda con un id único (idempotencia), compara el monto y recién entonces confirma la orden. Responde 200 incluso al descartar, para no provocar reintentos infinitos.
+      security: []
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - wompi
+              - mock
+      responses:
+        "200":
+          description: Evento recibido
+  /api/payments/{paymentId}/events:
+    get:
+      tags:
+        - Payments
+      summary: Eventos recibidos para un pago
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/dashboard/overview:
+    get:
+      tags:
+        - Dashboard
+      summary: KPIs, comparativa y series del establecimiento
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+  /api/dashboard/priority:
+    get:
+      tags:
+        - Dashboard
+      summary: Productos priorizados por riesgo
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+  /api/dashboard/sales:
+    get:
+      tags:
+        - Dashboard
+      summary: Historial de ventas
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Sale"
+                  meta:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      pageSize:
+                        type: integer
+                      total:
+                        type: integer
+                      totalPages:
+                        type: integer
+        default: *a1
+      parameters: *a4
+  /api/dashboard/promo-outcomes:
+    get:
+      tags:
+        - Dashboard
+      summary: Resultados de promociones anteriores
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      description: "Memoria de aprendizaje del motor de recomendaciones: qué descuento logró qué porcentaje de venta en cada categoría y en cuántos días. Incluye los datos semilla."
+      parameters:
+        - name: establishmentId
+          in: query
+          schema:
+            type: string
+            format: uuid
+  /api/dashboard/me:
+    get:
+      tags:
+        - Dashboard
+      summary: Mi ahorro e impacto como compradora
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+  /api/admin/overview:
+    get:
+      tags:
+        - Admin
+      summary: Resumen global de la plataforma
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+  /api/admin/establishments:
+    get:
+      tags:
+        - Admin
+      summary: Establecimientos con métricas
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters: *a4
+  /api/admin/listings:
+    get:
+      tags:
+        - Admin
+      summary: Publicaciones de toda la plataforma
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters: *a4
+  /api/admin/requests:
+    get:
+      tags:
+        - Admin
+      summary: Solicitudes de cuenta de establecimiento
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters: *a4
+  /api/admin/requests/{id}/approve:
+    post:
+      tags:
+        - Admin
+      summary: Aprobar una solicitud
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      description: Crea el establecimiento, asocia a la persona como propietaria y le cambia el rol.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/admin/requests/{id}/reject:
+    post:
+      tags:
+        - Admin
+      summary: Rechazar una solicitud
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/admin/users:
+    get:
+      tags:
+        - Admin
+      summary: Usuarios de la plataforma
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters: *a4
+  /api/admin/users/{id}:
+    patch:
+      tags:
+        - Admin
+      summary: Cambiar rol o estado de una cuenta
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/admin/audit:
+    get:
+      tags:
+        - Admin
+      summary: Bitácora de auditoría
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters: *a4
+  /api/admin/payment-events:
+    get:
+      tags:
+        - Admin
+      summary: Eventos de pasarela recientes
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters: *a4
+  /api/notifications:
+    get:
+      tags:
+        - Admin
+      summary: Mis notificaciones
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      parameters: *a4
+  /api/notifications/{id}/read:
+    post:
+      tags:
+        - Admin
+      summary: Marcar una notificación como leída
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1
+      description: Solo surte efecto sobre notificaciones propias o del establecimiento de la sesión.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/notifications/read-all:
+    post:
+      tags:
+        - Admin
+      summary: Marcar todas como leídas
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+        default: *a1

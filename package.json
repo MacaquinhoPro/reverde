@@ -32,7 +32,9 @@
     "db:seed": "npm run seed -w @reverde/server",
     "db:studio": "npm exec -w @reverde/server -- prisma studio",
     "db:backup": "bash scripts/db-backup.sh",
-    "db:restore": "bash scripts/db-restore.sh"
+    "db:restore": "bash scripts/db-restore.sh",
+    "docs:openapi": "tsx scripts/export-openapi.ts",
+    "docs:openapi:check": "node scripts/check-openapi-drift.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.47.0",
@@ -51,7 +53,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
-    "@vitest/coverage-v8": "^3.2.7",
+    "@vitest/coverage-v8": "^5.1.0",
     "autocannon": "^8.0.0",
     "autoprefixer": "^10.6.1",
     "concurrently": "^10.0.6",
@@ -61,7 +63,8 @@
     "tailwindcss": "^3.4.17",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
-    "vitest": "^3.2.7"
+    "vitest": "^5.1.0",
+    "yaml": "^2.9.1"
   },
   "workspaces": [
     "server"

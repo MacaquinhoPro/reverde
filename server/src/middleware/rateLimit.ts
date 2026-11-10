@@ -2,7 +2,7 @@
  * Límite de peticiones por ventana deslizante, en memoria del proceso.
  *
  * Suficiente para una sola instancia; con varias réplicas hay que moverlo a
- * Redis (ver docs/ARCHITECTURE.md § límites conocidos). La protección de
+ * Redis (ver docs/arquitectura/seguridad.md § pendientes, S2). La protección de
  * fuerza bruta contra el login **no** depende de esto: está en la base de
  * datos (tabla LoginAttempt), así que sobrevive a reinicios y réplicas.
  */
